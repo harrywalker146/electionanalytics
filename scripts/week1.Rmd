@@ -1,0 +1,111 @@
+---
+title: "swing_states"
+output: html_document
+date: '2022-09-11'
+---
+
+```{r}
+library(tidyverse)
+library(usmap)
+library(ggplot2)
+
+# Read in datasets
+popvote_df <- read_csv("Section data/house nationwide vote by party 1948-2020.csv")
+pvstate_df <- read_csv("Section data/house party vote share by district 1948-2020.csv")
+
+```
+
+
+```{r}
+swing_state_df_2016 <- pvstate_df %>%
+    filter(raceYear == 2016) %>%
+    select(raceYear,State,RepVotes, DemVotes) %>%
+  group_by(raceYear) %>% group_by(State) %>%
+  mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
+  select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() 
+
+swing_state_df_2020 <- pvstate_df %>%
+    filter(raceYear == 2020) %>%
+    select(raceYear,State,RepVotes, DemVotes) %>%
+  group_by(raceYear) %>% group_by(State) %>%
+  mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
+  select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() 
+
+
+# pv_margins_map_2020 <- pvstate_df %>%
+#   filter(raceYear == 2020) %>%
+#   group_by(State) %>%
+#   summarise(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
+#   mutate(winMargin = RepVotesTotal - DemVotesTotal)
+```
+
+```{r}
+margin = pvstate_df %>%
+  filter(raceYear>=1980) %>%
+    select(raceYear, State, RepVotes, DemVotes) %>%
+  # summarize party vote share by state
+  group_by(State,raceYear) %>%
+# mutate Rep vote margin by state %>%
+    mutate(R_votemargin_st = (sum(RepVotes))/
+                            sum(RepVotes + DemVotes),
+           D_votemargin_st = (sum(DemVotes))/
+                            sum(RepVotes + DemVotes)) %>%
+    rename(state = State)%>% distinct()
+# plot
+plot_usmap(data = margin, regions = "states", values = "R_votemargin_st") +
+  facet_wrap(facets = raceYear ~.) +
+  scale_fill_gradient(low = "white", high = "red", name = "GOP two-party voteshare margin") +
+  theme_void()
+```
+```{r}
+swing_state_df <- pvstate_df %>%
+    filter(raceYear >= 1976) %>%
+    select(raceYear,State,RepVotes, DemVotes) %>%
+  group_by(State,raceYear) %>%
+  mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
+  select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() %>%
+  mutate(partisanship = RepVotesTotal/(RepVotesTotal + DemVotesTotal))
+```
+
+```{r}
+new_df = swing_state_df %>%
+  group_by(State) %>%
+  mutate(swing = case_when(
+    raceYear == 1984 ~ partisanship - partisanship[raceYear==1980],
+    raceYear == 1986 ~ partisanship - partisanship[raceYear==1982],
+    raceYear == 1988 ~ partisanship - partisanship[raceYear==1984],
+    raceYear == 1990 ~ partisanship - partisanship[raceYear==1986],
+    raceYear == 1992 ~ partisanship - partisanship[raceYear==1988],
+    raceYear == 1994 ~ partisanship - partisanship[raceYear==1988],
+    raceYear == 1996 ~ partisanship - partisanship[raceYear==1992],
+    raceYear == 1998 ~ partisanship - partisanship[raceYear==1994],
+    raceYear == 2000 ~ partisanship - partisanship[raceYear==1996],
+    raceYear == 2002 ~ partisanship - partisanship[raceYear==1998],
+    raceYear == 2004 ~ partisanship - partisanship[raceYear==2000],
+    raceYear == 2006 ~ partisanship - partisanship[raceYear==2002],
+    raceYear == 2008 ~ partisanship - partisanship[raceYear==2004],
+    raceYear == 2010 ~ partisanship - partisanship[raceYear==2006],
+    raceYear == 2012 ~ partisanship - partisanship[raceYear==2008],
+    raceYear == 2014 ~ partisanship - partisanship[raceYear==2010],
+    raceYear == 2016 ~ partisanship - partisanship[raceYear==2012],
+    raceYear == 2018 ~ partisanship - partisanship[raceYear==2014],
+    raceYear == 2020 ~ partisanship - partisanship[raceYear==2016]))%>%na.omit() %>% mutate(swing2 = swing*100)
+
+colnames(new_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal","partisanship","swing","swing2")
+```
+
+```{r}
+plot_usmap(data = new_df, regions = "state", values = "swing2") +
+  facet_wrap(facets = raceYear~.) +
+  scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Swing Margin") + 
+  labs(title = "Swing States for U.S. Presidential Elections over Time",subtitle = "Positive Numbers corresponds to a larger vote share for Republicans compared to the last election") + theme(legend.position = "right",
+        panel.grid = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+# ggsave("swing.png", height = 6, width = 12)
+```
+
+
