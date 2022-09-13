@@ -10,35 +10,12 @@ library(usmap)
 library(ggplot2)
 
 # Read in datasets
-popvote_df <- read_csv("Section data/house nationwide vote by party 1948-2020.csv")
+popvote_df <- read_csv("..data/week1/house nationwide vote by party 1948-2020.csv")
 pvstate_df <- read_csv("Section data/house party vote share by district 1948-2020.csv")
 
 ```
 
-
-```{r}
-swing_state_df_2016 <- pvstate_df %>%
-    filter(raceYear == 2016) %>%
-    select(raceYear,State,RepVotes, DemVotes) %>%
-  group_by(raceYear) %>% group_by(State) %>%
-  mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
-  select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() 
-
-swing_state_df_2020 <- pvstate_df %>%
-    filter(raceYear == 2020) %>%
-    select(raceYear,State,RepVotes, DemVotes) %>%
-  group_by(raceYear) %>% group_by(State) %>%
-  mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
-  select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() 
-
-
-# pv_margins_map_2020 <- pvstate_df %>%
-#   filter(raceYear == 2020) %>%
-#   group_by(State) %>%
-#   summarise(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
-#   mutate(winMargin = RepVotesTotal - DemVotesTotal)
-```
-
+One common way, and very reasonable way, to predict how states may vote in an upcoming election is by looking at the vote share for a specific party over time. Below are plots of the United States with states highlighted different shades of red depending on the percentage of voters that voted for Republicans. Darker shades of red indicate that Republicans carried the state by a wide margin, while lighter shades mean it was close or went to the Democrats. 
 ```{r}
 margin = pvstate_df %>%
   filter(raceYear>=1980) %>%
@@ -46,18 +23,27 @@ margin = pvstate_df %>%
   # summarize party vote share by state
   group_by(State,raceYear) %>%
 # mutate Rep vote margin by state %>%
-    mutate(R_votemargin_st = (sum(RepVotes))/
+    mutate(R_votemargin_st = 100*(sum(RepVotes))/
                             sum(RepVotes + DemVotes),
-           D_votemargin_st = (sum(DemVotes))/
+           D_votemargin_st = 100*(sum(DemVotes))/
                             sum(RepVotes + DemVotes)) %>%
+  select(raceYear,State, R_votemargin_st,D_votemargin_st) %>%
     rename(state = State)%>% distinct()
 # plot
-plot_usmap(data = margin, regions = "states", values = "R_votemargin_st") +
-  facet_wrap(facets = raceYear ~.) +
-  scale_fill_gradient(low = "white", high = "red", name = "GOP two-party voteshare margin") +
-  theme_void()
+
+plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
+  facet_wrap(facets = raceYear~.) +
+  scale_fill_gradient2(low = "blue",mid = "white",high="red",name = "Swing Margin") + 
+  labs(title = "Republican Win Share for House Elections over Time",subtitle = "Larger Numbers corresponds to a larger vote share for Republicans") + theme(legend.position = "right",
+        panel.grid = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
 ```
-```{r}
+We can see from the plots that a majority of states rarely flip for a different party. For example, California has voted for a Democrat every year since 1988 while Texas has voted for a Republican every cycle since 1980. More generally, more rural southern states in the "Sun" or "Bible" Belt have consistently voted for Republicans by large margins while coastal regions with denser urban areas like New England and the West Coast have supported Democrats. Ultimately, politicians know their bases of support. In the last presidential election, neither Joe Biden or Donald Trump held a campaign event in California, Oregon, or Washington State. As campaigners, it did not make sense for either candidate to spend time in these states because they were assured to vote for Biden. Instead, Biden and Trump focused most of their time and advertising dollars in "swing" states where voters tend to be more moderate. 
+
+```{r, echo=FALSE}
 swing_state_df <- pvstate_df %>%
     filter(raceYear >= 1976) %>%
     select(raceYear,State,RepVotes, DemVotes) %>%
@@ -65,9 +51,8 @@ swing_state_df <- pvstate_df %>%
   mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
   select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() %>%
   mutate(partisanship = RepVotesTotal/(RepVotesTotal + DemVotesTotal))
-```
 
-```{r}
+
 new_df = swing_state_df %>%
   group_by(State) %>%
   mutate(swing = case_when(
@@ -89,15 +74,16 @@ new_df = swing_state_df %>%
     raceYear == 2014 ~ partisanship - partisanship[raceYear==2010],
     raceYear == 2016 ~ partisanship - partisanship[raceYear==2012],
     raceYear == 2018 ~ partisanship - partisanship[raceYear==2014],
-    raceYear == 2020 ~ partisanship - partisanship[raceYear==2016]))%>%na.omit() %>% mutate(swing2 = swing*100)
+    raceYear == 2020 ~ partisanship - partisanship[raceYear==2016]))%>%na.omit() 
 
 colnames(new_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal","partisanship","swing","swing2")
 ```
 
+
 ```{r}
-plot_usmap(data = new_df, regions = "state", values = "swing2") +
+plot_usmap(data = new_df, regions = "state", values = "swing") +
   facet_wrap(facets = raceYear~.) +
-  scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Swing Margin") + 
+  scale_fill_gradient2(low = "blue",mid = "white",high = "red",limits = c(-.30,.30),name = "Swing Margin") + 
   labs(title = "Swing States for U.S. Presidential Elections over Time",subtitle = "Positive Numbers corresponds to a larger vote share for Republicans compared to the last election") + theme(legend.position = "right",
         panel.grid = element_blank(),
         axis.text.x = element_blank(),
@@ -108,4 +94,4 @@ plot_usmap(data = new_df, regions = "state", values = "swing2") +
 # ggsave("swing.png", height = 6, width = 12)
 ```
 
-
+As seen in the plots above, 
