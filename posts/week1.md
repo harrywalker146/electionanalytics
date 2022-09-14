@@ -2,7 +2,7 @@
 
 One common way to predict upcoming midterm congressional elections is to
 look at the vote share for each major party by state over time. Below
-are maps of the United States, The highlighted colors represent the
+are maps of the United States. The highlighted colors represent the
 percentage of Republican votes calculated by taking the total number of
 votes for Republican congressional candidates in the state divided by
 the total number of votes cast. Red indicates that Republicans carried
