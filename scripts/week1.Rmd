@@ -24,12 +24,13 @@ One common way to predict upcoming midterm congressional elections is to look at
 margin = pvstate_df %>%
   filter(raceYear>=1980) %>%
     select(raceYear, State, RepVotes, DemVotes) %>%
-  # summarize party vote share by state
+  # summarize party vote share by state and year
   group_by(State,raceYear) %>%
-# mutate Rep vote margin by state %>%
+# get republican vote share
     mutate(R_votemargin_st = (sum(RepVotes))/
                             sum(RepVotes + DemVotes) - (sum(DemVotes))/sum(RepVotes + DemVotes)) %>%
   select(raceYear,State, R_votemargin_st) %>%
+  #filter only for midterm years
     rename(state = State)%>% distinct() %>% filter(raceYear == 2018 | 
                                                      raceYear == 2014 | 
                                                      raceYear == 2010 |
@@ -46,10 +47,17 @@ margin = pvstate_df %>%
 \
 **Vote margin by state 1982-2018 Midterms**\
 ```{r, echo=FALSE,fig.width=12, fig.height=6}
+#plotting Republican Win Share for Each Midterms
 plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
   facet_wrap(facets = raceYear~.) +
-  scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Vote Share Margin") + 
-  labs(title = "Vote Share for Two Major Parties in Midterm Elections",subtitle = "Red corresponds to a larger vote share for Republicans and blue corresponds to a larger vote share for Democrats") + 
+  scale_fill_gradient2(
+    low = "blue",
+    mid = "white",
+    high = "red",
+    name = "Vote Share Margin") + 
+  labs(
+    title = "Vote Share for Two Major Parties in Midterm Elections",
+    subtitle = "Red corresponds to a larger vote share for Republicans and blue corresponds to a larger vote share for Democrats") + 
   theme(legend.position = "right",
         panel.grid = element_blank(),
         axis.text.x = element_blank(),
@@ -60,6 +68,8 @@ plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
         legend.title = element_text(size = 15),
         plot.title = element_text(size = 20),
         plot.subtitle = element_text(size = 15))
+
+ggsave("margin.png", height = 6, width = 12)
 ```
 
 
@@ -68,13 +78,17 @@ The maps over time reflect that, in most states, party preference rarely changes
 
 ```{r, echo=FALSE}
 swing_state_df <- pvstate_df %>%
+  #filter for years over 1976
     filter(raceYear >= 1976) %>%
     select(raceYear,State,RepVotes, DemVotes) %>%
+  #groupby state and race year
   group_by(State,raceYear) %>%
   mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
   select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() %>%
+  #create "partisanship" variable that represents Republican vote share
   mutate(partisanship = RepVotesTotal/(RepVotesTotal + DemVotesTotal)) %>%
   group_by(State) %>%
+  #create swing variable based off of partisanship and lagged 4 year prior partisanship by state
   mutate(swing = case_when(
     raceYear == 1986 ~ partisanship - partisanship[raceYear==1982],
     raceYear == 1990 ~ partisanship - partisanship[raceYear==1986],
@@ -93,6 +107,7 @@ colnames(swing_state_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal",
 
 **Swing Analysis, Midterm Elections 1982-2018**
 ```{r,echo=FALSE,,fig.width=12, fig.height=6}
+#plot swing metric by state
 plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
   facet_wrap(facets = raceYear~.) +
   scale_fill_gradient2(low = "blue",
@@ -113,7 +128,7 @@ plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
         plot.title = element_text(size = 20),
         plot.subtitle = element_text(size = 15))
 
-# ggsave("swing.png", height = 6, width = 12)
+ggsave("swing.png", height = 6, width = 12)
 ```
 
 Before we answer these questions, it is important to figure out which states are becoming more competitive. From the maps below, the different shades of blue and red represent a “swing” factor. This is calculated by taking the vote share won by the Republicans and subtracting their vote share in the midterm election four years ago. Negative numbers, corresponding to blue, mean that Republicans won a smaller share of the votes compared to four years ago. States that are a deeper shade of red means the opposite - Republicans won a larger share of the vote than they did four years prior. Looking at the maps, we can see that Pennsylvania, Michigan, Ohio, and Florida have flipped between red and blue in the past few midterm elections (this also holds true of Presidential elections). There is clear evidence for this as well because politicians at the top of the ballot held most of their campaign rallies in the “rust” belt in the lead up to the 2020 election. According to the [Washington Post](https://www.washingtonpost.com/elections/2020/11/02/campaign-rallies-covid/), Pennsylvania and Florida were the most common destination for both Joe Biden and Donald trump. 
