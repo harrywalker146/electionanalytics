@@ -7,7 +7,7 @@ date: '2022-09-11'
 ---
 
 
-****Blog - Week 1****
+***Blog - Week 1***
 ```{r, echo=FALSE, warning=FALSE,message=FALSE}
 #load libraries and data
 library(tidyverse)
@@ -20,7 +20,7 @@ pvstate_df <- read_csv("../data/week1/house party vote share by district 1948-20
 
 One common way to predict upcoming midterm congressional elections is by looking at the vote share for both major parties in each state over time. Below are maps of the United States highlighted with different colors depending on the percentage of voters that voted for Republicans, calculated by taking the total number of votes to Republican congressional candidates in the state divided by the total number of votes cast. Red indicates that Republicans carried the state, while blue shades mean it went to the Democrats. White shades indicate that the vote was very close.
 
-$$\\[1in]$$
+
 
 
 ```{r,echo=FALSE}
@@ -45,7 +45,7 @@ margin = pvstate_df %>%
                                                      raceYear == 1982)
 ```
 
-$$\\[1in]$$
+
 
 **Vote margin by state 1982-2018 Midterms**
 ```{r, echo=FALSE}
@@ -91,7 +91,7 @@ swing_state_df <- pvstate_df %>%
 colnames(swing_state_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal","partisanship","swing")
 ```
 
-$$\\[1in]$$
+
 
 **Swing Analysis, Midterm Elections 1982-2018
 ```{r,echo=FALSE}
