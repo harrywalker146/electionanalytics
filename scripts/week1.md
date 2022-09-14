@@ -1,33 +1,4 @@
-\*\*\*\*Blog - Week 1 \*\*\*\*
-
-    ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──
-
-    ## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
-    ## ✓ tibble  3.1.6     ✓ dplyr   1.0.8
-    ## ✓ tidyr   1.2.0     ✓ stringr 1.4.0
-    ## ✓ readr   2.1.2     ✓ forcats 0.5.1
-
-    ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
-    ## Rows: 37 Columns: 16
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr (2): AreaAll, PluralityPartyAll
-    ## dbl (9): year, RepWinnerAll, DemWinnerAll, OtherWinnerAll, RepVotesTotalPerc...
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
-    ## Rows: 16067 Columns: 31
-    ## ── Column specification ────────────────────────────────────────────────────────
-    ## Delimiter: ","
-    ## chr (16): Office, State, Area, RepCandidate, RepStatus, DemCandidate, DemSta...
-    ## dbl (14): raceYear, RepVotes, DemVotes, ThirdVotes, OtherVotes, PluralityVot...
-    ## lgl  (1): CensusPop
-    ## 
-    ## ℹ Use `spec()` to retrieve the full column specification for this data.
-    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\*\*\*\*Blog - Week 1\*\*\*\*
 
 One common way to predict upcoming midterm congressional elections is by
 looking at the vote share for both major parties in each state over
@@ -38,6 +9,10 @@ congressional candidates in the state divided by the total number of
 votes cast. Red indicates that Republicans carried the state, while blue
 shades mean it went to the Democrats. White shades indicate that the
 vote was very close.
+
+$$\\\\\[1in\]$$
+
+$$\\\\\[1in\]$$
 
 **Vote margin by state 1982-2018 Midterms**
 ![](week1_files/figure-markdown_github/unnamed-chunk-3-1.png)
@@ -59,6 +34,9 @@ about these communities who may end up who holds the power in Congress
 or in the White House? Lastly, which candidates should the RNC and DNC
 allocate resources and attention to?
 
+$$\\\\\[1in\]$$
+
+\*\*Swing Analysis, Midterm Elections 1982-2018
 ![](week1_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 Before we answer these questions, it is important to figure out which
