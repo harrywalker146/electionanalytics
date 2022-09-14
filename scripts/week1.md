@@ -8,7 +8,7 @@ calculated by taking the total number of votes to Republican
 congressional candidates in the state divided by the total number of
 votes cast. Red indicates that Republicans carried the state, while blue
 shades mean it went to the Democrats. White shades indicate that the
-vote was very close.
+vote was very close.  
 
 **Vote margin by state 1982-2018 Midterms**
 ![](week1_files/figure-markdown_github/unnamed-chunk-3-1.png)
@@ -28,9 +28,9 @@ direction that are now becoming more competitive? If certain states are
 beginning to shift their partisan slant, what do we need to understand
 about these communities who may end up who holds the power in Congress
 or in the White House? Lastly, which candidates should the RNC and DNC
-allocate resources and attention to?
+allocate resources and attention to?  
 
-\*\*Swing Analysis, Midterm Elections 1982-2018
+**Swing Analysis, Midterm Elections 1982-2018**
 ![](week1_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 Before we answer these questions, it is important to figure out which

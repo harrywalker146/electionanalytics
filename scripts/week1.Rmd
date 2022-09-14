@@ -18,10 +18,7 @@ library(ggplot2)
 pvstate_df <- read_csv("../data/week1/house party vote share by district 1948-2020.csv")
 ```
 
-One common way to predict upcoming midterm congressional elections is by looking at the vote share for both major parties in each state over time. Below are maps of the United States highlighted with different colors depending on the percentage of voters that voted for Republicans, calculated by taking the total number of votes to Republican congressional candidates in the state divided by the total number of votes cast. Red indicates that Republicans carried the state, while blue shades mean it went to the Democrats. White shades indicate that the vote was very close.
-
-
-
+One common way to predict upcoming midterm congressional elections is by looking at the vote share for both major parties in each state over time. Below are maps of the United States highlighted with different colors depending on the percentage of voters that voted for Republicans, calculated by taking the total number of votes to Republican congressional candidates in the state divided by the total number of votes cast. Red indicates that Republicans carried the state, while blue shades mean it went to the Democrats. White shades indicate that the vote was very close.\
 
 ```{r,echo=FALSE}
 margin = pvstate_df %>%
@@ -65,7 +62,8 @@ plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
         plot.subtitle = element_text(size = 15))
 ```
 
-We can see from the plots that most states rarely change their party preference. For example, California has voted heavily for Democrats to represent them in Congress since the 1990s while Texas has voted for Republicans in the same time frame. More generally, southern states in the "Sun" or "Bible" Belt have consistently voted for Republicans by large margins while coastal regions with denser urban areas like New England and the West Coast have supported Democrats. While much of midterm election results can be attributed to district level factors and how the congressional maps were drawn, looking at the few states that regularly flip party preferences can answer important questions for national politics. Namely, are there states that used to lean a certain direction that are now becoming more competitive? If certain states are beginning to shift their partisan slant, what do we need to understand about these communities who may end up who holds the power in Congress or in the White House? Lastly, which candidates should the RNC and DNC allocate resources and attention to? 
+
+We can see from the plots that most states rarely change their party preference. For example, California has voted heavily for Democrats to represent them in Congress since the 1990s while Texas has voted for Republicans in the same time frame. More generally, southern states in the "Sun" or "Bible" Belt have consistently voted for Republicans by large margins while coastal regions with denser urban areas like New England and the West Coast have supported Democrats. While much of midterm election results can be attributed to district level factors and how the congressional maps were drawn, looking at the few states that regularly flip party preferences can answer important questions for national politics. Namely, are there states that used to lean a certain direction that are now becoming more competitive? If certain states are beginning to shift their partisan slant, what do we need to understand about these communities who may end up who holds the power in Congress or in the White House? Lastly, which candidates should the RNC and DNC allocate resources and attention to?\
 
 
 ```{r, echo=FALSE}
@@ -93,7 +91,7 @@ colnames(swing_state_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal",
 
 
 
-**Swing Analysis, Midterm Elections 1982-2018
+**Swing Analysis, Midterm Elections 1982-2018**
 ```{r,echo=FALSE}
 plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
   facet_wrap(facets = raceYear~.) +
