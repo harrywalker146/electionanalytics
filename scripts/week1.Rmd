@@ -43,9 +43,9 @@ margin = pvstate_df %>%
 ```
 
 
-
-\**Vote margin by state 1982-2018 Midterms**
-```{r, echo=FALSE}
+\
+**Vote margin by state 1982-2018 Midterms**\
+```{r, echo=FALSE,fig.width=8, fig.height=6}
 plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
   facet_wrap(facets = raceYear~.) +
   scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Vote Share Margin") + 
@@ -92,7 +92,7 @@ colnames(swing_state_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal",
 
 
 **Swing Analysis, Midterm Elections 1982-2018**
-```{r,echo=FALSE}
+```{r,echo=FALSE,,fig.width=8, fig.height=6}
 plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
   facet_wrap(facets = raceYear~.) +
   scale_fill_gradient2(low = "blue",

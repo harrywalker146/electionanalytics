@@ -10,7 +10,8 @@ votes cast. Red indicates that Republicans carried the state, while blue
 shades mean it went to the Democrats. White shades indicate that the
 vote was very close.  
 
-\*\*Vote margin by state 1982-2018 Midterms\*\*
+  
+**Vote margin by state 1982-2018 Midterms**  
 ![](week1_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 We can see from the plots that most states rarely change their party
