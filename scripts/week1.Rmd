@@ -69,7 +69,7 @@ plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
         plot.title = element_text(size = 20),
         plot.subtitle = element_text(size = 15))
 
-ggsave("margin.png", height = 6, width = 12)
+# ggsave("margin.png", height = 6, width = 12)
 ```
 
 
@@ -128,7 +128,7 @@ plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
         plot.title = element_text(size = 20),
         plot.subtitle = element_text(size = 15))
 
-ggsave("swing.png", height = 6, width = 12)
+# ggsave("swing.png", height = 6, width = 12)
 ```
 
 Before we answer these questions, it is important to figure out which states are becoming more competitive. From the maps below, the different shades of blue and red represent a “swing” factor. This is calculated by taking the vote share won by the Republicans and subtracting their vote share in the midterm election four years ago. Negative numbers, corresponding to blue, mean that Republicans won a smaller share of the votes compared to four years ago. States that are a deeper shade of red means the opposite - Republicans won a larger share of the vote than they did four years prior. Looking at the maps, we can see that Pennsylvania, Michigan, Ohio, and Florida have flipped between red and blue in the past few midterm elections (this also holds true of Presidential elections). There is clear evidence for this as well because politicians at the top of the ballot held most of their campaign rallies in the “rust” belt in the lead up to the 2020 election. According to the [Washington Post](https://www.washingtonpost.com/elections/2020/11/02/campaign-rallies-covid/), Pennsylvania and Florida were the most common destination for both Joe Biden and Donald trump. 
