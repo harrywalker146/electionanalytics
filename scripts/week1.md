@@ -10,7 +10,7 @@ votes cast. Red indicates that Republicans carried the state, while blue
 shades mean it went to the Democrats. White shades indicate that the
 vote was very close.  
 
-**Vote margin by state 1982-2018 Midterms**
+\*\*Vote margin by state 1982-2018 Midterms\*\*
 ![](week1_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 We can see from the plots that most states rarely change their party
@@ -60,5 +60,11 @@ and
 [Texas](https://www.theguardian.com/us-news/commentisfree/2022/mar/08/can-texas-become-purple-that-may-depend-on-hispanic-voters)
 all have rapidly growing cities and surrounding suburbs (which typically
 vote for Democrats). In addition, immigrants escaping violence from
-South America naturalizing in Arizona and Texas could open the door for
-Democratic gains in the House or Senate.
+South America living in Arizona and Texas could open the door for
+Democratic gains in the House and Senate. These demographic changes
+could have huge consequences for the future of both political parties
+and for Presidential Elections. Arizona, Georgia, and especially Texas
+have large electoral college counts, so as these states become more
+competitive, national organizations and candidates will spend
+considerably more time, money, and organizational energy attracting
+“swingable” voters.
