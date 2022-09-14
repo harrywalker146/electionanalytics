@@ -3,12 +3,14 @@
 One common way to predict upcoming midterm congressional elections is to
 look at the vote share for each major party by state over time. Below
 are maps of the United States. The highlighted colors represent the
-percentage of Republican votes calculated by taking the total number of
+proportion of Republican votes calculated by taking the total number of
 votes for Republican congressional candidates in the state divided by
-the total number of votes cast. Red indicates that Republicans carried
-the state, while blue shades reflect a Democratic victory. The darker
-the shade means that party won by a larger margin. White and pale shades
-indicate that the vote was very close.  
+the total number of votes cast. Then, we subtract this number by the
+proportion of Democratic votes, thus getting a value between  − 1 and 1.
+Red indicates that Republicans carried the state, while blue shades
+reflect a Democratic victory. The darker the shade means that party won
+by a larger margin. White and pale shades indicate that the vote was
+very close.  
 
   
 **Vote margin by state 1982-2018 Midterms**  
