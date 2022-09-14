@@ -6,7 +6,9 @@ output:
 date: '2022-09-11'
 ---
 
-```{r, echo=FALSE}
+
+****Blog - Week 1 ****
+```{r, echo=FALSE, warning=FALSE}
 library(tidyverse)
 library(usmap)
 library(ggplot2)
@@ -40,17 +42,23 @@ margin = pvstate_df %>%
                                                      raceYear == 1982)
 ```
 
+**Vote margin by state 1982-2018 Midterms**
+```{r, echo=FALSE}
 
-```{r}
 plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
   facet_wrap(facets = raceYear~.) +
   scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Vote Share Margin") + 
-  labs(title = "Vote Share for Two Major Parties in Midterm Elections",subtitle = "Red corresponds to a larger vote share for Republicans and blue corresponds to a larger vote share for Democrats") + theme(legend.position = "right",
+  labs(title = "Vote Share for Two Major Parties in Midterm Elections",subtitle = "Red corresponds to a larger vote share for Republicans and blue corresponds to a larger vote share for Democrats") + 
+  theme(legend.position = "right",
         panel.grid = element_blank(),
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank())
+        axis.title.y = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 15))
 ```
 
 We can see from the plots that most states rarely change their party preference. For example, California has voted heavily for Democrats to represent them in Congress since the 1990s while Texas has voted for Republicans in the same time frame. More generally, southern states in the "Sun" or "Bible" Belt have consistently voted for Republicans by large margins while coastal regions with denser urban areas like New England and the West Coast have supported Democrats. While much of midterm election results can be attributed to district level factors and how the congressional maps were drawn, looking at the few states that regularly flip party preferences can answer important questions for national politics. Namely, are there states that used to lean a certain direction that are now becoming more competitive? If certain states are beginning to shift their partisan slant, what do we need to understand about these communities who may end up who holds the power in Congress or in the White House? Lastly, which candidates should the RNC and DNC allocate resources and attention to? 
@@ -63,10 +71,7 @@ swing_state_df <- pvstate_df %>%
   group_by(State,raceYear) %>%
   mutate(RepVotesTotal = sum(RepVotes),DemVotesTotal = sum(DemVotes)) %>%
   select(raceYear,State,RepVotesTotal,DemVotesTotal) %>% distinct() %>%
-  mutate(partisanship = RepVotesTotal/(RepVotesTotal + DemVotesTotal))
-
-
-new_df = swing_state_df %>%
+  mutate(partisanship = RepVotesTotal/(RepVotesTotal + DemVotesTotal)) %>%
   group_by(State) %>%
   mutate(swing = case_when(
     raceYear == 1986 ~ partisanship - partisanship[raceYear==1982],
@@ -79,20 +84,30 @@ new_df = swing_state_df %>%
     raceYear == 2014 ~ partisanship - partisanship[raceYear==2010],
     raceYear == 2018 ~ partisanship - partisanship[raceYear==2014]))%>%na.omit() 
 
-colnames(new_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal","partisanship","swing")
+colnames(swing_state_df) = c("raceYear","state","RepVotesTotal","DemVotesTotal","partisanship","swing")
 ```
 
 
 ```{r,echo=FALSE}
-plot_usmap(data = new_df, regions = "state", values = "swing") +
+plot_usmap(data = swing_state_df, regions = "state", values = "swing") +
   facet_wrap(facets = raceYear~.) +
-  scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Swing Margin") + 
-  labs(title = "Swing States for U.S. Presidential Elections over Time",subtitle = "Positive Numbers corresponds to a larger vote share for Republicans compared to the last election") + theme(legend.position = "right",
+  scale_fill_gradient2(low = "blue",
+                       mid = "white",
+                       high = "red",
+                       name = "Swing Margin") + 
+  labs(
+    title = "Swing States for U.S. Presidential Elections over Time",
+    subtitle = "Positive Numbers corresponds to a larger vote share for Republicans compared to the last election") + 
+  theme(legend.position = "right",
         panel.grid = element_blank(),
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
         axis.title.x = element_blank(),
-        axis.title.y = element_blank())
+        axis.title.y = element_blank(),
+        legend.text = element_text(size = 15),
+        legend.title = element_text(size = 15),
+        plot.title = element_text(size = 20),
+        plot.subtitle = element_text(size = 15))
 
 # ggsave("swing.png", height = 6, width = 12)
 ```
