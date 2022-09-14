@@ -6,8 +6,9 @@ are maps of the United States, The highlighted colors represent the
 percentage of Republican votes calculated by taking the total number of
 votes for Republican congressional candidates in the state divided by
 the total number of votes cast. Red indicates that Republicans carried
-the state, while blue shades reflect a Democratic victory. White and
-pale shades indicate that the vote was very close.  
+the state, while blue shades reflect a Democratic victory. The darker
+the shade means that party won by a larger margin. White and pale shades
+indicate that the vote was very close.  
 
   
 **Vote margin by state 1982-2018 Midterms**  
@@ -39,9 +40,11 @@ shades of blue and red represent a “swing” factor. This is calculated by
 taking the vote share won by the Republicans and subtracting their vote
 share in the midterm election four years ago. Negative numbers,
 corresponding to blue, mean that Republicans won a smaller share of the
-votes compared to four years ago. States that are a deeper shade of red
-means the opposite - Republicans won a larger share of the vote than
-they did four years prior. Looking at the maps, we can see that
+votes compared to four years ago. For example, in 2018, Texas did not
+vote overall for Democratic candidates, but the percent of the vote that
+went to Democrats was higher than 2014. States that are a deeper shade
+of red means the opposite - Republicans won a larger share of the vote
+than they did four years prior. Looking at the maps, we can see that
 Pennsylvania, Michigan, Ohio, and Florida have flipped between red and
 blue in the past few midterm elections (this also holds true of
 Presidential elections). There is clear evidence for this as well
