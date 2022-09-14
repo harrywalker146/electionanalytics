@@ -1,3 +1,5 @@
+\*\*\*\*Blog - Week 1 \*\*\*\*
+
     ## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.1 ──
 
     ## ✓ ggplot2 3.3.5     ✓ purrr   0.3.4
@@ -37,18 +39,7 @@ votes cast. Red indicates that Republicans carried the state, while blue
 shades mean it went to the Democrats. White shades indicate that the
 vote was very close.
 
-``` r
-plot_usmap(data = margin, regions = "state", values = "R_votemargin_st") +
-  facet_wrap(facets = raceYear~.) +
-  scale_fill_gradient2(low = "blue",mid = "white",high = "red",name = "Vote Share Margin") + 
-  labs(title = "Vote Share for Two Major Parties in Midterm Elections",subtitle = "Red corresponds to a larger vote share for Republicans and blue corresponds to a larger vote share for Democrats") + theme(legend.position = "right",
-        panel.grid = element_blank(),
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_blank())
-```
-
+**Vote margin by state 1982-2018 Midterms**
 ![](week1_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 We can see from the plots that most states rarely change their party
