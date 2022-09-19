@@ -1,0 +1,208 @@
+---
+title: "Blog: Week 2 - Economy"
+output: html_document
+date: '2022-09-18'
+---
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+```
+\tiny
+
+Using economic data is a key element in many models used to predict presidential or midterm elections. We see constant reporting about inflation, unemployment, and GDP figures in the media. Sometimes, these economic metrics are reported with regards to the stock market and how investors are making decisions. However, many Americans end up using this information as a way to criticize or applaud the current President. While the President does not have full control over the economy, it is always a key issue on voters minds. But, as we will see, the economy may not be as useful as originally thought in predicting Republican or Democratic vote share in congressional elections. 
+
+```{r, echo=FALSE,message=FALSE}
+#read in the data
+cpi_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv")
+GDP_quarterly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv")
+
+unemployment_national = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv")
+
+unemployment_state_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_state_monthly.csv") %>% 
+  filter((Year %%2 ==0) & (Month==10)) %>%
+  select("State and area","Year","Unemployed_prct") %>%
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962))
+
+cpi_df = cpi_monthly %>%
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year %% 2 == 0) & (Month ==10))
+
+gdp_df = GDP_quarterly %>%
+  filter((year %% 2 == 0) & (quarter_yr ==4)) %>% rename(Year=year)
+
+unemployment_national_df = unemployment_national %>%
+  filter((year %% 2 == 0) & (quarter_yr == 4))%>% rename(Year=year) %>%
+  select(Year,UNRATE)
+
+house_popvote = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/house_popvote_seats.csv") %>% rename(Year=year)
+
+df = left_join(left_join(left_join(house_popvote,cpi_df,by=c("Year")), gdp_df, by="Year"),unemployment_national_df,by="Year")%>% 
+  select(Year,
+         R_seats,
+         D_seats,
+         winner_party,
+         R_majorvote_pct,
+         D_majorvote_pct,
+         president_party,
+         H_incumbent_party_winner,
+         H_incumbent_party_majorvote_pct,
+         H_incumbent_party,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) %>% na.omit() %>%
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  mutate(president_party_house_vote = case_when(
+           president_party == "D" ~ D_majorvote_pct,
+           president_party == "R" ~ R_majorvote_pct
+  ))
+```
+
+
+The first logical step in creating a predictive model for the 2022 Midterm Elections is to visualize how economic indicators have related to election outcomes in the past, but one key decision in creating these variables is determining which inflation, unemployment, and GDP growth metrics to use. For example, a forecast may decide to use GDP growth between the first fiscal quarter of a President's term through to the 7th fiscal quarter (which is when the midterms take place) while others may use GDP growth statistics from the election year only. Borrowing from Achen and Bartels' "Retrospective Voting" concept, voters make choices based on how the economy has performed. However, many people forget cannot distinguish how the economy has done throughout the first two years of a President's term, instead only focusing on how the economy has done recently. Therefore, it makes sense to take the most recent economic information before the election and using the measurement that the media commonly reports (because this is how most voters consume this information). Combining these two ideas, the plots depict year over year [inflation](https://www.bls.gov/news.release/pdf/cpi.pdf) (media outlets report the year-over-yeard number) and [unemployment](https://www.bls.gov/news.release/pdf/empsit.pdf) for the month of October before a midterm, and GDP growth between the second and third quarter of the election year. As seen below, none of these metrics seem to have a clear linear relationship with how the the sitting President's party performs in the midterms. Besides 1962, 1966, 1978, and 2002, every party with control over the white house lost a majority of the vote share. 
+
+```{r,echo=FALSE}
+df %>%
+  ggplot(aes(x=Inflation_yoy, y=president_party_house_vote,
+             label=Year)) + 
+    geom_text() +
+    geom_hline(yintercept=50, lty=2) + # median
+    xlab("YoY Inflation in October of the Election Year") +
+    ylab("Congressional Vote Share Nationally") +
+  ggtitle("Inflation vs President Incumbent party House PV")+
+    theme_bw() +
+    theme(
+      axis.text = element_text(size = 10))
+
+
+df %>%
+  ggplot(aes(x=UNRATE, y=president_party_house_vote,
+             label=Year)) + 
+    geom_text() +
+    geom_hline(yintercept=50, lty=2) + # median
+    xlab("Unemployment in October of the Election Year") +
+    ylab("Congressional Vote Share Nationally") +
+  ggtitle("Unemployment vs President Incumbent party House PV")+
+    theme_bw() +
+    theme(
+      axis.text = element_text(size = 10))
+
+df %>%
+  ggplot(aes(x=GDP_growth_pct, y=president_party_house_vote,
+             label=Year)) + 
+    geom_text() +
+    geom_hline(yintercept=50, lty=2) + # median
+    xlab("GDP YoY Growth in October of the Election Year") +
+    ylab("Congressional Vote Share Nationally") +
+  ggtitle("GDP Growth vs President Incumbent party House PV")+
+    theme_bw() +
+    theme(
+      axis.text = element_text(size = 10))
+```
+
+\tiny
+
+**Creating Linear Models**
+
+First, I create a simple linear model using inflation data and Republican vote share in past Midterm elections. I decided to exclude Presidential elections for a two main reasons. First, turnout in Presidential elections is normally considerably higher than in [midterm elections](https://fairvote.org/resources/voter-turnout/). Second, Presidential candidates have much larger national profiles compared to the average congressional representative. Candidates for President run on expansive policy platforms, and dominate the news cycle. Ultimately, the dynamics of Presidential elections are fundamentally different than midterms. 
+
+\tiny
+
+At first, I tried creating separate linear models for inflation, GDP growth rate, and unemployment as sole independent variables to predict each party's vote share (party votes plus third party candidates who lean in the same direction). The results show that only inflation is a significant predictor because its p-value is less than $0.05$. When predicting Republican vote share, the GOP are predicted to lose $0.75$% of the popular vote share for every $1$% increase in inflation. This finding is the opposite for Democrats, which gain a predicted $0.75$% in the popular vote share for every $1$% increase in inflation. These results are dubious at best, and while the plots below appear to suggest there is a positive linear relationship between inflation and Democratic vote share, many of these data points require context (the most obvious example is in 1974 when President Ford pardoned Richard Nixon after the Watergate Scandal two months before the midterms). More generally, using past midterms when there are only $15$ observations in the dataset means that small changes in election outcomes could lead to very different results in the models. 
+```{r,echo=FALSE,message=FALSE}
+df %>%
+  ggplot(aes(x=Inflation_yoy, y=D_majorvote_pct,
+             label=Year)) + 
+    geom_text(size = 5) +
+    geom_smooth(method="lm", formula = y ~ x) +
+    geom_hline(yintercept=50, lty=2) +
+    geom_vline(xintercept=0.0, lty=2) + # median
+    xlab("Inflation") +
+    ylab("Democrat Popular Vote Share") +
+    theme_bw() +
+    theme(axis.text = element_text(size = 10),
+          axis.title = element_text(size = 10),
+          plot.title = element_text(size = 10))
+
+
+# at most 4 decimal places
+kable(cbind(Metric.Republican_Voteshare = c("Inflation","GDP Growth","Unemployment"),
+  Coefficient = c(
+    round(summary(lm(R_majorvote_pct ~ Inflation_yoy,data = df))$coef[2],digits=3),
+    round(summary(lm(R_majorvote_pct ~ GDP_growth_pct,data = df))$coef[2],digits=3),
+    round(summary(lm(R_majorvote_pct ~ UNRATE,data = df))$coef[2], digits=3)), 
+  P.Value = c(
+    round(summary(lm(R_majorvote_pct ~ Inflation_yoy,data = df))$coef[8],digits=3),
+    round(summary(lm(R_majorvote_pct ~ GDP_growth_pct,data = df))$coef[8],digits=3),
+    round(summary(lm(R_majorvote_pct ~ UNRATE,data = df))$coef[8],digits=3))))
+
+
+
+kable(cbind(Metric.Democrat_Voteshare = c("Inflation","GDP Growth","Unemployment"),
+  Coefficient = c(
+    round(summary(lm(D_majorvote_pct ~ Inflation_yoy,data = df))$coef[2],digits=3),
+    round(summary(lm(D_majorvote_pct ~ GDP_growth_pct,data = df))$coef[2],digits=3),
+    round(summary(lm(D_majorvote_pct ~ UNRATE,data = df))$coef[2], digits=3)), 
+  P.Value = c(
+    round(summary(lm(D_majorvote_pct ~ Inflation_yoy,data = df))$coef[8],digits=3),
+    round(summary(lm(D_majorvote_pct ~ GDP_growth_pct,data = df))$coef[8],digits=3),
+    round(summary(lm(D_majorvote_pct ~ UNRATE,data = df))$coef[8],digits=3))))
+```
+
+
+\
+
+
+
+```{r,echo=FALSE,message=FALSE}
+#read in the data
+cpi2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv") %>%
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year == 2022)& (Month==6))
+
+gdp2022= read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2)) %>% rename(Year=year)
+
+unemployment2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2))%>% rename(Year=year) %>% select(Year,UNRATE)
+
+economy.2022 = left_join(left_join(cpi2022, gdp2022, by="Year"),unemployment2022,by="Year") %>% 
+  select(Year,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) 
+```
+
+The next adjustment I made was to ask a different question. Instead of predicting how many votes Republicans or Democrats will win, the better question may be how will the current President's party perform in the midterms. This makes more sense because voters oftentimes punish the current President for bad economic performance. When looking at it this way, none of the predictors are significant, but the coefficients are interpretable. In the table below, rises in inflation and unemployment hurt the sitting administration's party while GDP growth has a positive effect. 
+```{r,echo=FALSE}
+
+inflation_lm = lm(president_party_house_vote ~ Inflation_yoy,data = df)
+gdp_lm = lm(president_party_house_vote ~ GDP_growth_pct,data = df)
+unemployment_lm = lm(president_party_house_vote ~ UNRATE,data = df)
+
+models = c("Inflation","GDP Growth","Unemployment")
+preds = c(round(predict(inflation_lm,economy.2022),digits=3),round(predict(gdp_lm,economy.2022),digits=3),round(predict(unemployment_lm,economy.2022),digits=3))
+
+coefs = c(round(summary(lm(president_party_house_vote ~ Inflation_yoy,data = df))$coef[2],digits=3),
+          round(summary(lm(president_party_house_vote ~ GDP_growth_pct,data = df))$coef[2],digits=3),
+          round(summary(lm(president_party_house_vote ~ UNRATE,data = df))$coef[2], digits=3))
+
+pvals = c(
+    round(summary(lm(president_party_house_vote ~ Inflation_yoy,data = df))$coef[8],digits=3),
+    round(summary(lm(president_party_house_vote ~ GDP_growth_pct,data = df))$coef[8],digits=3),
+    round(summary(lm(president_party_house_vote ~ UNRATE,data = df))$coef[8],digits=3))
+
+kable(cbind(models,coefs,pvals,preds))
+```
+
+
+
