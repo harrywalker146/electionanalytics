@@ -1,7 +1,8 @@
-**Week 2 - Predicting Midterms using Economic Factors** Using economic
-data is a key element in many models used to predict presidential or
-midterm elections. People associate politics with their personal
-finances, and the media constantly reports about inflation,
+**Week 2 - Predicting Midterms using Economic Factors**
+
+Using economic data is a key element in many models used to predict
+presidential or midterm elections. People associate politics with their
+personal finances, and the media constantly reports about inflation,
 unemployment, and GDP figures. While the President does not have full
 control over the economy, many Americans end up using this information
 as a way to criticize or applaud the current administration.But, as we
@@ -16,15 +17,16 @@ metrics to use. For example, a forecast may decide to use GDP growth
 between the first fiscal quarter of a President’s term through to the
 7th fiscal quarter (which is when the midterms take place) while others
 may use GDP growth statistics from only the election year Borrowing from
-Achen and Bartels’ “Retrospective Voting” concept, voters make choices
-based on how the economy has performed. However, many people forget how
-the economy has done throughout the first two years of a President’s
-term, instead only focusing on how the economy has done in the months
-leading up to the election. Therefore, it makes sense to take the most
-recent economic information before the election and using the
-measurement that the media commonly reports (because this is how most
-voters consume this information). Combining these two ideas, the plots
-depict year over year
+Achen and Bartels’ “Retrospective Voting”
+[concept](https://muse-jhu-edu.ezp-prod1.hul.harvard.edu/chapter/2341025),
+voters make choices based on how the economy has performed. However,
+many people forget how the economy has done throughout the first two
+years of a President’s term, instead only focusing on how the economy
+has done in the months leading up to the election. Therefore, it makes
+sense to take the most recent economic information before the election
+and using the measurement that the media commonly reports (because this
+is how most voters consume this information). Combining these two ideas,
+the plots depict year over year
 [inflation](https://www.bls.gov/news.release/pdf/cpi.pdf) (media outlets
 report the year-over-year number) and
 [unemployment](https://www.bls.gov/news.release/pdf/empsit.pdf) for the
