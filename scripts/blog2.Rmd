@@ -222,7 +222,7 @@ kable(cbind(Metric.Democrat_Voteshare = c("Inflation","GDP Growth","Unemployment
 
 **Extension - Asking a Different Question**
 
-```{r}
+```{r,echo=FALSE}
 inflation_lm = lm(president_party_house_vote ~ Inflation_yoy,data = df)
 gdp_lm = lm(president_party_house_vote ~ GDP_growth_pct,data = df)
 unemployment_lm = lm(president_party_house_vote ~ UNRATE,data = df)
