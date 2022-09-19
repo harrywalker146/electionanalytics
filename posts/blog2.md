@@ -1,6 +1,7 @@
-Using economic data is a key element in many models used to predict
-presidential or midterm elections. People associate politics with their
-personal finances, and the media constantly reports about inflation,
+**Week 2 - Predicting Midterms using Economic Factors** Using economic
+data is a key element in many models used to predict presidential or
+midterm elections. People associate politics with their personal
+finances, and the media constantly reports about inflation,
 unemployment, and GDP figures. While the President does not have full
 control over the economy, many Americans end up using this information
 as a way to criticize or applaud the current administration.But, as we
@@ -70,42 +71,42 @@ in the data set means that small changes in past election outcomes could
 lead to very different results in the models.
 ![](blog2_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
-|     | Metric.Republican_Voteshare | Coefficient | P.Value | Predictions |
-|:----|:----------------------------|:------------|:--------|:------------|
-| 1   | Inflation                   | -0.756      | 0.013   | 43.982      |
-| 1   | GDP Growth                  | 2.157       | 0.116   | 51.441      |
-| 1   | Unemployment                | -0.055      | 0.926   | 48.024      |
+|     | Metric.Republican_Voteshare | Coefficient | P.Value | Predictions.2022 |
+|:----|:----------------------------|:------------|:--------|:-----------------|
+| 1   | Inflation                   | -0.756      | 0.013   | 43.982           |
+| 1   | GDP Growth                  | 2.157       | 0.116   | 51.441           |
+| 1   | Unemployment                | -0.055      | 0.926   | 48.024           |
 
-|     | Metric.Democrat_Voteshare | Coefficient | P.Value | Predictions |
-|:----|:--------------------------|:------------|:--------|:------------|
-| 1   | Inflation                 | 0.756       | 0.013   | 56.018      |
-| 1   | GDP Growth                | -2.157      | 0.116   | 48.559      |
-| 1   | Unemployment              | 0.055       | 0.926   | 51.976      |
+|     | Metric.Democrat_Voteshare | Coefficient | P.Value | Predictions.2022 |
+|:----|:--------------------------|:------------|:--------|:-----------------|
+| 1   | Inflation                 | 0.756       | 0.013   | 56.018           |
+| 1   | GDP Growth                | -2.157      | 0.116   | 48.559           |
+| 1   | Unemployment              | 0.055       | 0.926   | 51.976           |
 
   
-
-Next, I asked a different question. Instead of predicting how many votes
-Republicans or Democrats will win, the better question may be less
-concerned with specific party. Put more generally, how will the current
-President’s party perform in the midterms based on economic factors?
-This makes more sense because voters punish the current President for
-bad economic performance. When looking at it this way, none of the
-predictors are significant, but the coefficients remain interpretable.
-In the table below, rises in inflation and unemployment hurt the sitting
-administration’s party while GDP growth has a positive relationship with
-the party who controls the White House. Using the most recent economic
-data for 2022, the models return a wide range of predictions for how
-well President Biden’s Party (Democrats) will perform this fall. The
-inflation model thinks voters will vote overwhelmingly for Republicans
-(which is far more reasonable than the previous model that heavily
-favored Democrats because of high inflation), while strong GDP growth
-indicates the Democrats could win the popular vote. Compared to the
-previous models, changing the dependent variable reveals that usually,
-the party of the current President struggles in the midterms. While
-these models are far from perfect, they serve as a baseline that we can
-improve upon immensely. As we move closer to the election, it will be
-important to account for fear of a recession due to the Federal
-Reserve’s tightening of interest rates.
+**Extension - Asking a Different Question** Next, I asked a different
+question. Instead of predicting how many votes Republicans or Democrats
+will win, the better question may be less concerned with specific party.
+Put more generally, how will the current President’s party perform in
+the midterms based on economic factors? This makes more sense because
+voters punish the current President for bad economic performance. When
+looking at it this way, none of the predictors are significant, but the
+coefficients remain interpretable. In the table below, rises in
+inflation and unemployment hurt the sitting administration’s party while
+GDP growth has a positive relationship with the party who controls the
+White House. Using the most recent economic data for 2022, the models
+return a wide range of predictions for how well President Biden’s Party
+(Democrats) will perform this fall. The inflation model thinks voters
+will vote overwhelmingly for Republicans (which is far more reasonable
+than the previous model that heavily favored Democrats because of high
+inflation), while strong GDP growth indicates the Democrats could win
+the popular vote. Compared to the previous models, changing the
+dependent variable reveals that usually, the party of the current
+President struggles in the midterms. While these models are far from
+perfect, they serve as a baseline that we can improve upon immensely. As
+we move closer to the election, it will be important to account for fear
+of a recession due to the Federal Reserve’s tightening of interest
+rates.
 
 |     | models       | coefficients | p.values | predictions.2022 |
 |:----|:-------------|:-------------|:---------|:-----------------|
