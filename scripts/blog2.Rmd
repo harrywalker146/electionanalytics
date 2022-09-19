@@ -14,6 +14,7 @@ library(knitr)
 \tiny
 
 **Week 2 - Predicting Midterms using Economic Factors**
+\tiny
 Using economic data is a key element in many models used to predict presidential or midterm elections. People associate politics with their personal finances, and the media constantly reports about inflation, unemployment, and GDP figures. While the President does not have full control over the economy, many Americans end up using this information as a way to criticize or applaud the current administration.But, as we will see, the economy may not be as useful as originally thought in predicting Republican or Democratic vote share in the midterm elections. 
 
 ```{r, echo=FALSE,message=FALSE}
