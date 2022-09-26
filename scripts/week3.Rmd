@@ -214,6 +214,8 @@ Last week, we tried to predict the congressional vote share of the current Presi
 model’s positive relationship between democrats and inflation). This week, I want to incorporate generic polls conducted in January of the election year with a linear model using the economic data from last week (unemployment, inflation, and GDP growth). Doing this, we see that none of the predictors are significant, since none of the p-values are less than 0.05. However, when we take generic polling alone as a predictor of the success of the current President’s party in the midterms, it becomes a significant predictor and has a positive correlation with house popular vote share. Most importantly, when doing an ANOVA test between the model with the economic and polling data compared to just the polling model, the p-value is greater than 0.05, meaning that the model with more variables is not adding any extra information already captured by the polls. In light of this information, I am hesitant to consider adding economic data to my forecast because it has not proven to be useful this far. Instead, using aggregated generic polling data from FiveThirtyEight, we see that Democrats are predicted to get 47.7% of the house vote share. While a lot has changed for President Biden since January, I think this result is reasonable and is in line with what other forecasters are predicting. Also, I have more confidence knowing this prediction is coming from a variable that we know to be more associated with actual results.
 
 ```{r, echo=FALSE,warning=FALSE,message=FALSE}
+
+
 #read in the data
 cpi_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv")
 GDP_quarterly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv")
@@ -296,12 +298,15 @@ economy.2022 = left_join(left_join(cpi2022, gdp2022, by="Year"),unemployment2022
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE}
 generic_polls_clean = generic_polls %>%
+  #filter by month
   filter(emonth == 1) %>%
+  #get midterm years
   filter(year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
   group_by(year) %>%
   mutate(agg_dem = mean(dem),
          agg_rep = mean(rep)) %>% 
   select(year,agg_dem, agg_rep) %>%
+  #factor in who the president is
   mutate(current_president_party_poll = case_when(
            year == 1962 ~ agg_dem,
            year == 1966 ~ agg_dem,
