@@ -7,6 +7,7 @@ date: '2022-09-26'
 ---
 
 **Generic Polling - Looking at the Past**
+\tiny
 Polls are used to predict the outcome of national, state, and local elections in every cycle. Polls are helpful for the candidates because they get a rough sense of their odds of winning and polls on specific issues can also help inform and/or shape a politician’s stance. More importantly, though, the media, corporations, investors, foreign nations, and many more actors all follow polling closely because they have an interest in which party will win control of the White House or the United States Congress. Even when any single poll is relatively uninformative, has a wide margin of error, or is dependent on the current political or economic conditions, they can shape how interested parties make funding decisions or otherwise lend support. Therefore, the key issue becomes – how accurate are polls taken well in advance of election day?
 
 As seen in the plot below of the lead up to the 2018 Midterm Elections, at some points during early in the year, Democrats held an almost 20 percentage point advantage. As the election approached, however, the race got tighter and tighter. Similarly, when comparing polls from January and October of a midterm election year, we can see there is a much wider spread in January, but election results end up falling much closer to the polls right before the vote takes place. Voters change their minds; economic or societal changes can make a voter unhappy in January, but then he/she flips by October and ends up ["coming home"](https://www.nytimes.com/2014/04/23/upshot/the-myth-of-swing-voters-in-midterm-elections.html). But despite the fact that polls may predict the margin incorrectly, polls in midterm years have accurately predicted the winner every time on the aggregate (with 2006 in the January polls, and 1974 and 1990 in the October polls as the only close calls).
@@ -138,7 +139,7 @@ polls_df %>%
     ylab("generic ballot support") + xlab("") +
     theme_classic()
 
-ggsave("2018genericpolls.png", height = 6, width = 12)
+#ggsave("2018genericpolls.png", height = 6, width = 12)
 
 
 polls_df %>%
@@ -168,7 +169,7 @@ polls_df %>%
     xlab("winning party's polling margin in January (first poll, between-party)") +
     ylab("winning party's two-party voteshare margin") +
     ggtitle("Relationship between January polls and voteshare (House)") 
-ggsave("Januarygenericpolls.png", height = 6, width = 12)
+#ggsave("Januarygenericpolls.png", height = 6, width = 12)
   
 # October poll
 polls_df %>%
@@ -199,7 +200,7 @@ polls_df %>%
     ylab("winning party's two-party voteshare margin") +
     ggtitle("Relationship between October polls and voteshare (House)") 
 
-ggsave("Octobergenericpolls.png", height = 6, width = 12)
+#ggsave("Octobergenericpolls.png", height = 6, width = 12)
 ```
 
 
