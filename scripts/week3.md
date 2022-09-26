@@ -84,23 +84,22 @@ variable that we know to be more associated with actual results.
     ## 1 Democrats         41.9
     ## 2 Republicans       43.0
 
-    ##       1 
-    ## 47.7097
-
 **Extension 1 - Examining the Methods of Major Forecastors**
 
 Two of the most influential organizations that predict elections are
-FiveThirtyEight and the Economist. Both meticulously forecast
-Presidential, Congressional, Senate, and Gubernatorial races, but their
-methods end up being slightly different. While both models incorporate
-polling and “fundamental” data, their definitions of fundamental may be
-different. Most importantly, The Economist uses economic data in their
-forecast, but FiveThirtyEight makese no mention. Instead, fundamentals
-relate more with fundraising, incumbency, experience of candidates, and
-overall partisan lean of states. Nate Silver’s house forecast places a
-larger emphasis on overall generic polls and state partisan lean for
-congressional races because polling in specific districts is often
-sporadic and less trustworthy.
+[FiveThirtyEight](https://fivethirtyeight.com/methodology/how-fivethirtyeights-house-and-senate-models-work/)
+and the
+[Economist](https://projects.economist.com/us-2020-forecast/house). Both
+meticulously forecast Presidential, Congressional, Senate, and
+Gubernatorial races, but their methods end up being slightly different.
+While both models incorporate polling and “fundamental” data, their
+definitions of fundamental may be different. Most importantly, The
+Economist uses economic data in their forecast, but FiveThirtyEight
+makese no mention. Instead, fundamentals relate more with fundraising,
+incumbency, experience of candidates, and overall partisan lean of
+states. Nate Silver’s house forecast places a larger emphasis on overall
+generic polls and state partisan lean for congressional races because
+polling in specific districts is often sporadic and less trustworthy.
 
 In both models, the probability of winning is based off thousands of
 simulations while also factoring in different types of errors.

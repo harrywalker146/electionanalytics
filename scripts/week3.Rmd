@@ -368,9 +368,7 @@ polls538_2022 %>% filter(month == 1) %>%
 t1 = data.frame(41.93835)
 colnames(t1) = c("current_president_party_poll")
 
-predict(generic_poll_model, t1)
-
-
+#predict(generic_poll_model, t1)
 ```
 
 
@@ -378,7 +376,7 @@ predict(generic_poll_model, t1)
 
 **Extension 1 - Examining the Methods of Major Forecastors**
 
-Two of the most influential organizations that predict elections are FiveThirtyEight and the Economist. Both meticulously forecast Presidential, Congressional, Senate, and Gubernatorial races, but their methods end up being slightly different. While both models incorporate polling and "fundamental" data, their definitions of fundamental may be different. Most importantly, The Economist uses economic data in their forecast, but FiveThirtyEight makese no mention. Instead, fundamentals relate more with fundraising, incumbency, experience of candidates, and overall partisan lean of states. Nate Silver's house forecast places a larger emphasis on overall generic polls and state partisan lean for congressional races because polling in specific districts is often sporadic and less trustworthy. 
+Two of the most influential organizations that predict elections are [FiveThirtyEight](https://fivethirtyeight.com/methodology/how-fivethirtyeights-house-and-senate-models-work/) and the [Economist](https://projects.economist.com/us-2020-forecast/house). Both meticulously forecast Presidential, Congressional, Senate, and Gubernatorial races, but their methods end up being slightly different. While both models incorporate polling and "fundamental" data, their definitions of fundamental may be different. Most importantly, The Economist uses economic data in their forecast, but FiveThirtyEight makese no mention. Instead, fundamentals relate more with fundraising, incumbency, experience of candidates, and overall partisan lean of states. Nate Silver's house forecast places a larger emphasis on overall generic polls and state partisan lean for congressional races because polling in specific districts is often sporadic and less trustworthy. 
 
 In both models, the probability of winning is based off thousands of simulations while also factoring in different types of errors. FiveThirtyEight and the Economist try to account for local error in specific states of districts, demographic error, error that has underestimated Republican incumbents in the past, and national swing errors, but the Economist arrives at the probability of winning the House differently. Ultimately, most house races can be predicted easily because they are non-competitive. Knowing this, the Economist builds models for each competitive house race, a tiny subset of all the races, and then incorporates these into an overall prediction of who will win the house. 
 
