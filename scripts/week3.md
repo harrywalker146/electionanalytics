@@ -77,13 +77,6 @@ is reasonable and is in line with what other forecasters are predicting.
 Also, I have more confidence knowing this prediction is coming from a
 variable that we know to be more associated with actual results.
 
-    ## # A tibble: 2 × 2
-    ## # Groups:   candidate [2]
-    ##   candidate   agg_suport
-    ##   <chr>            <dbl>
-    ## 1 Democrats         41.9
-    ## 2 Republicans       43.0
-
 **Extension 1 - Examining the Methods of Major Forecastors**
 
 Two of the most influential organizations that predict elections are

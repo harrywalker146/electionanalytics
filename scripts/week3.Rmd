@@ -359,10 +359,7 @@ polls538_2022$year <- year(polls538_2022$date)
 polls538_2022$month <- month(polls538_2022$date) 
 
 
-polls538_2022 %>% filter(month == 1) %>%
-  group_by(candidate)%>%
-  mutate(agg_suport = mean(pct_estimate)) %>%
-  select(candidate,agg_suport) %>% unique() 
+#polls538_2022 %>% filter(month == 1) %>%group_by(candidate)%>%mutate(agg_suport = mean(pct_estimate)) %>%select(candidate,agg_suport) %>% unique() 
 
 
 t1 = data.frame(41.93835)
