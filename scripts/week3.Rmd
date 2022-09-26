@@ -1,0 +1,389 @@
+---
+title: "Blog 3 - Polling"
+output:
+  md_document:
+    variant: markdown_github
+date: '2022-09-26'
+---
+
+**Generic Polling - Looking at the Past**
+
+Polls are used to predict the outcome of national, state, and local elections in every cycle. Polls are helpful for the candidates because they get a rough sense of their odds of winning (polls on specific issues can also help inform a politician's stance), but more importantly voters, the media, corporations, investors, foreign nations and many more actors all have an interest in which party will win control of the White House or the United States Congress. Oddly enough, polls are heavily relied upon to understand public opinion even when any single poll is relatively uninformative and can vary wildly depending on the current political or economic conditions. As seen in the plot below of the lead up to the 2018 Midterm Elections, at some points during early in the year, Democrats held an almost 20 percentage point advantage. As the election approached however, the race got tighter and tighter. Similarly, when comparing polls from January and October of a midterm election year, we can see there is a much wider spread in January, but election results end up falling much closer to the polls right before the vote takes place. This can happen because a voter who leans slightly in one direction is unhappy with his/her party in January may say they will flip, but by October they end up ["coming home"](https://www.nytimes.com/2014/04/23/upshot/the-myth-of-swing-voters-in-midterm-elections.html). However, what we can see is that while polls may predict the margin incorrectly, polls in midterm years have accurately predicted the winner every time on the aggregate (with 2006 in the January polls, and 1974 and 1990 in the October polls as the only close calls).
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+```
+
+```{r, echo=FALSE,message=FALSE}
+#read in the data
+cpi_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv")
+GDP_quarterly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv")
+
+unemployment_national = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv")
+
+unemployment_state_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_state_monthly.csv") %>% 
+  #filter election years and October
+  filter((Year %%2 ==0) & (Month==10)) %>%
+  select("State and area","Year","Unemployed_prct") %>%
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962))
+
+cpi_df = cpi_monthly %>%
+  #code from week 2 class to split strings into year and month
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  #using lag function to calculate YoY Inflation for the Month of October
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year %% 2 == 0) & (Month ==10))
+
+gdp_df = GDP_quarterly %>%
+  filter((year %% 2 == 0) & (quarter_yr ==4)) %>% rename(Year=year)
+
+unemployment_national_df = unemployment_national %>%
+  filter((year %% 2 == 0) & (quarter_yr == 4))%>% rename(Year=year) %>%
+  select(Year,UNRATE)
+
+house_popvote = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/house_popvote_seats.csv") %>% rename(Year=year)
+
+#left joining dataframes into one large DF
+df = left_join(left_join(left_join(house_popvote,cpi_df,by=c("Year")), gdp_df, by="Year"),unemployment_national_df,by="Year")%>% 
+  #select only the columns we need
+  select(Year,
+         R_seats,
+         D_seats,
+         winner_party,
+         R_majorvote_pct,
+         D_majorvote_pct,
+         president_party,
+         H_incumbent_party_winner,
+         H_incumbent_party_majorvote_pct,
+         H_incumbent_party,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) %>% na.omit() %>%
+  #filter for only midterms
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  #create variable that takes how the democrats do when there is a democratic in the WH, same with Republicans
+  mutate(president_party_house_vote = case_when(
+           president_party == "D" ~ D_majorvote_pct,
+           president_party == "R" ~ R_majorvote_pct
+  ))
+```
+
+
+```{r,echo=FALSE,message=FALSE}
+#read in the but only getting our 2022 economy so we can make a prediction at the end
+cpi2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv") %>%
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year == 2022)& (Month==6))
+
+gdp2022= read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2)) %>% rename(Year=year)
+
+unemployment2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2))%>% rename(Year=year) %>% select(Year,UNRATE)
+
+economy.2022 = left_join(left_join(cpi2022, gdp2022, by="Year"),unemployment2022,by="Year") %>% 
+  select(Year,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) 
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+polls_df = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week3/polls_df.csv")
+generic_polls = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week3/GenericPolls1942_2020.csv")
+house_popvote_df = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week3/H_popvote_df_fin.csv")
+```
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+polls_df_month_before = polls_df %>%
+  filter(days_until_election >= 1 & days_until_election < 30) %>%
+  group_by(year,party) %>%
+  mutate(agg_support = mean(support)) %>%
+  select(year,party,agg_support) %>% unique()
+
+generic_polls_month_before = generic_polls %>%
+  filter(days_until_election >=1 & days_until_election < 30) %>%
+  group_by(year) %>%
+  mutate(agg_dem = mean(dem),
+         agg_rep = mean(rep)) %>%
+  select(year,agg_dem,agg_rep) %>% unique()
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+polls_df$poll_date = lubridate::mdy(polls_df$poll_date)
+polls_df %>%
+  group_by(poll_date, party) %>%
+  mutate(avg_support = mean(support)) %>%
+# keep only unique dates
+  distinct(year, poll_date, avg_support, party) %>%
+  filter(year == 2018) %>%
+  ggplot(aes(x = poll_date, y = avg_support,
+             colour = party)) +
+    geom_point(size = 0.3) +
+    geom_line(size = 0.3) +
+    scale_x_date(date_labels = "%b, %Y") +
+    scale_color_manual(values = c("blue","red"), name = "") +
+    ylab("generic ballot support") + xlab("") +
+    theme_classic()
+
+
+polls_df %>%
+  group_by(poll_date, party) %>%
+  arrange((poll_date)) %>%
+  left_join(house_popvote_df, by = c("year"="year", "party"="party")) %>%
+  filter(emonth == 1) %>%
+  filter(year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  group_by(emonth, year) %>%
+  mutate(winner_support = case_when(winner_party == 'R' 
+                            & party == 'R' ~ support,
+                            winner_party == 'D' 
+                            & party == 'D' ~ support)) %>%
+  group_by(year) %>% 
+  mutate(pv2p_margin=abs(first(majorvote_pct)-last(majorvote_pct)), 
+        pv2p_winner = case_when(winner_party == 'D' ~ votes,
+            TRUE ~ votes),
+        poll_margin= case_when(winner_party == 'D' ~ first(support)-last(support),
+                                TRUE ~ last(support)-first(support))) %>%
+    filter(party == winner_party) %>%
+  ggplot(aes(x=poll_margin, y=pv2p_margin, label=year)) + 
+    geom_text() +
+    xlim(c(-5, 30)) + ylim(c(-5, 30)) +
+    geom_abline(slope=1, lty=2) +
+    geom_vline(xintercept=0, alpha=0.2) + 
+    geom_hline(yintercept=0, alpha=0.2) +
+    xlab("winning party's polling margin in January (first poll, between-party)") +
+    ylab("winning party's two-party voteshare margin") +
+    ggtitle("Relationship between January polls and voteshare (House)") 
+  
+# October poll
+polls_df %>%
+  group_by(poll_date, party) %>%
+  arrange((poll_date)) %>%
+  left_join(house_popvote_df, by = c("year"="year", "party"="party")) %>%
+  filter(emonth == 10) %>%
+  filter(year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  group_by(emonth, year) %>%
+  mutate(winner_support = case_when(winner_party == 'R' 
+                            & party == 'R' ~ support,
+                            winner_party == 'D' 
+                            & party == 'D' ~ support)) %>%
+  group_by(year) %>% 
+  mutate(pv2p_margin=abs(first(majorvote_pct)-last(majorvote_pct)), 
+        pv2p_winner = case_when(winner_party == 'D' ~ votes,
+            TRUE ~ votes),
+        poll_margin= case_when(winner_party == 'D' ~ first(support)-last(support),
+                                TRUE ~ last(support)-first(support))) %>%
+    filter(party == winner_party) %>%
+  ggplot(aes(x=poll_margin, y=pv2p_margin, label=year)) + 
+    geom_text() +
+    xlim(c(-5, 30)) + ylim(c(-5, 30)) +
+    geom_abline(slope=1, lty=2) +
+    geom_vline(xintercept=0, alpha=0.2) + 
+    geom_hline(yintercept=0, alpha=0.2) +
+    xlab("winning party's polling margin in October (first poll, between-party)") +
+    ylab("winning party's two-party voteshare margin") +
+    ggtitle("Relationship between October polls and voteshare (House)") 
+
+```
+
+
+
+**Incorporating Polls into our Model**
+
+Last week, we tried to predict the congressional vote share of the current President's party in midterm elections using economic data like GDP growth, unemployment, and inflation. We found that while inflation was significant, the model was extremely overfit and the relationship between inflation and other economic factors is very uncertain with how party's perform in midterm elections (the 1974 election, an extreme outlier, may well have driven the entire model's positive relationship between democrats and inflation). To try to build off of last week, I want to incorporate generic polls conducted in January of the election year in addition to economic indicators. 
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+#read in the data
+cpi_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv")
+GDP_quarterly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv")
+
+unemployment_national = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv")
+
+unemployment_state_monthly = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_state_monthly.csv") %>% 
+  #filter election years and October
+  filter((Year %%2 ==0) & (Month==10)) %>%
+  select("State and area","Year","Unemployed_prct") %>%
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962))
+
+cpi_df = cpi_monthly %>%
+  #code from week 2 class to split strings into year and month
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  #using lag function to calculate YoY Inflation for the Month of October
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year %% 2 == 0) & (Month ==10))
+
+gdp_df = GDP_quarterly %>%
+  filter((year %% 2 == 0) & (quarter_yr ==4)) %>% rename(Year=year)
+
+unemployment_national_df = unemployment_national %>%
+  filter((year %% 2 == 0) & (quarter_yr == 4))%>% rename(Year=year) %>%
+  select(Year,UNRATE)
+
+house_popvote = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/house_popvote_seats.csv") %>% rename(Year=year)
+
+#left joining dataframes into one large DF
+df = left_join(left_join(left_join(house_popvote,cpi_df,by=c("Year")), gdp_df, by="Year"),unemployment_national_df,by="Year")%>% 
+  #select only the columns we need
+  select(Year,
+         R_seats,
+         D_seats,
+         winner_party,
+         R_majorvote_pct,
+         D_majorvote_pct,
+         president_party,
+         H_incumbent_party_winner,
+         H_incumbent_party_majorvote_pct,
+         H_incumbent_party,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) %>% na.omit() %>%
+  #filter for only midterms
+  filter(Year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  #create variable that takes how the democrats do when there is a democratic in the WH, same with Republicans
+  mutate(president_party_house_vote = case_when(
+           president_party == "D" ~ D_majorvote_pct,
+           president_party == "R" ~ R_majorvote_pct
+  ))
+
+#read in the but only getting our 2022 economy so we can make a prediction at the end
+cpi2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/CPI_monthly.csv") %>%
+  mutate(Year = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,1]),
+         Month = as.numeric(str_split(cpi_monthly$DATE,"-",simplify=T)[,2])) %>% 
+  group_by(Month) %>% arrange(DATE) %>%
+  mutate(Inflation_yoy=100*(CPIAUCSL - lag(CPIAUCSL,1))/lag(CPIAUCSL,1)) %>%
+  ungroup() %>% arrange(DATE) %>%
+  filter((Year == 2022)& (Month==6))
+
+gdp2022= read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/GDP_quarterly.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2)) %>% rename(Year=year)
+
+unemployment2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week2/unemployment_national_quarterly_final.csv") %>%
+  filter((year == 2022) &(quarter_yr == 2))%>% rename(Year=year) %>% select(Year,UNRATE)
+
+economy.2022 = left_join(left_join(cpi2022, gdp2022, by="Year"),unemployment2022,by="Year") %>% 
+  select(Year,
+         Inflation_yoy,
+         GDP_growth_pct,
+         UNRATE) 
+
+```
+
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+generic_polls_clean = generic_polls %>%
+  filter(emonth == 1) %>%
+  filter(year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
+  group_by(year) %>%
+  mutate(agg_dem = mean(dem),
+         agg_rep = mean(rep)) %>% 
+  select(year,agg_dem, agg_rep) %>%
+  mutate(current_president_party_poll = case_when(
+           year == 1962 ~ agg_dem,
+           year == 1966 ~ agg_dem,
+           year == 1970 ~ agg_rep,
+           year == 1974 ~ agg_rep,
+           year == 1978 ~ agg_dem,
+           year == 1982 ~ agg_rep,
+           year == 1986 ~ agg_rep,
+           year == 1990 ~ agg_rep,
+           year == 1994 ~ agg_dem,
+           year == 1998 ~ agg_dem,
+           year == 2002 ~ agg_rep,
+           year == 2006 ~ agg_rep,
+           year == 2010 ~ agg_dem,
+           year == 2014 ~ agg_dem,
+           year == 2018 ~ agg_rep)) %>% unique() %>% rename(Year=year)
+
+df = left_join(df, generic_polls_clean, by="Year")
+```
+
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+library(knitr)
+all_variable_model = lm(president_party_house_vote~UNRATE+GDP_growth_pct+Inflation_yoy+current_president_party_poll, data=df)
+
+generic_poll_model = lm(president_party_house_vote~current_president_party_poll, data=df)
+
+kable(cbind(Model.Name = c("Generic Poll Only","Fundamentals and Polling"),
+  R.squared.adj = c(round(summary(generic_poll_model)$adj.r.squared, digits=3),
+                    round(summary(all_variable_model)$adj.r.squared, digits=3)))) 
+  
+
+kable(cbind(Predictor = c("Unemployment","GDP Growth Rate","Inflation", "Generic Ballot"), 
+            Coefficient = c(round(summary(all_variable_model)$coef[2],digits=3),
+                            round(summary(all_variable_model)$coef[3],digits=3),
+                            round(summary(all_variable_model)$coef[4],digits=3),
+                            round(summary(all_variable_model)$coef[5],digits=3)),
+            P.Val = c(round(summary(all_variable_model)$coef[17],digits=3),
+                            round(summary(all_variable_model)$coef[18],digits=3),
+                            round(summary(all_variable_model)$coef[19],digits=3),
+                            round(summary(all_variable_model)$coef[20],digits=3))))
+
+
+kable(cbind(Predictor = c("Generic Ballot"), 
+            Coefficient = c(round(summary(generic_poll_model)$coef[2],digits=3)),
+            P.Val = c(round(summary(generic_poll_model)$coef[8],digits=3))))
+
+
+#anova(all_variable_model,generic_poll_model)["Pr(>F)"][1]
+
+
+
+```
+
+After building a linear model with all the economic data from last week (unemployment, inflation, and GDP growth) along with generic polling data, we see that none of the predictors are significant, since none of the p-values are less than $0.05$. However, when we take generic polling alone as a predictor of the current President's party in the midterms, it becomes a significant predictor and has a positive correlation with house popular vote share. Most importantly however, when doing an ANOVA test between the model with the economic and polling data compared to just the polling model, the p-value is greater than $0.05$, meaning that the model with more variables is not adding any extra information already captured by the polls. In light of this information, I am going to be very hesitant when considering adding economic data into my forecast because it has not proven to be useful this far. Finally, we want to use use generic polling to predict this year's midterm election. Using aggregated polling data from FiveThirtyEight, we see that Democrats are predicted to get $47.7$% of the house vote share. While a lot has changed for President Biden since January, I think this result is reasonable and is in line with what other forecasters are predicting. Also, I have more confidence knowing this prediction is coming from a variable that we know to be more associated with actual results. 
+
+```{r, echo=FALSE,warning=FALSE,message=FALSE}
+library(lubridate)
+polls538_2022 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week3/538_generic_ballot_averages_2018-2022.csv") %>% filter(cycle == 2022)
+
+
+polls538_2022$date = lubridate::mdy(polls538_2022$date)
+
+polls538_2022$year <- year(polls538_2022$date)
+polls538_2022$month <- month(polls538_2022$date) 
+
+
+polls538_2022 %>% filter(month == 1) %>%
+  group_by(candidate)%>%
+  mutate(agg_suport = mean(pct_estimate)) %>%
+  select(candidate,agg_suport) %>% unique() 
+
+
+t1 = data.frame(41.93835)
+colnames(t1) = c("current_president_party_poll")
+
+predict(generic_poll_model, t1)
+
+
+```
+
+
+
+
+**Extension 1 - Examining the Methods of Major Forecastors**
+
+Two of the most influential organizations that predict elections are FiveThirtyEight and the Economist. Both meticulously forecast Presidential, Congressional, Senate, and Gubernatorial races, but their methods end up being slightly different. While both models incorporate polling and "fundamental" data, their definitions of fundamental may be different. Most importantly, The Economist uses economic data in their forecast, but FiveThirtyEight makese no mention. Instead, fundamentals relate more with fundraising, incumbency, experience of candidates, and overall partisan lean of states. Nate Silver's house forecast places a larger emphasis on overall generic polls and state partisan lean for congressional races because polling in specific districts is often sporadic and less trustworthy. 
+
+In both models, the probability of winning is based off thousands of simulations while also factoring in different types of errors. FiveThirtyEight and the Economist try to account for local error in specific states of districts, demographic error, error that has underestimated Republican incumbents in the past, and national swing errors, but the Economist arrives at the probability of winning the House differently. Ultimately, most house races can be predicted easily because they are non-competitive. Knowing this, the Economist builds models for each competitive house race, a tiny subset of all the races, and then incorporates these into an overall prediction of who will win the house. 
+
+While FiveThirtyEight's publishes a more thorough version of their methodology, I like the Economist's approach because of the localized nature of each house race. While economic factors and generic polling are important, it makes more sense to focus on the few dozen races that are competitive because these will end up deciding which party has control.
+
+
+
+
