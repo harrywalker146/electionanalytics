@@ -1,16 +1,18 @@
-**Generic Polling - Looking at the Past** Polls are used to predict the
-outcome of national, state, and local elections in every cycle. Polls
-are helpful for the candidates because they get a rough sense of their
-odds of winning and polls on specific issues can also help inform and/or
-shape a politician’s stance. More importantly, though, the media,
-corporations, investors, foreign nations, and many more actors all
-follow polling closely because they have an interest in which party will
-win control of the White House or the United States Congress. Even when
-any single poll is relatively uninformative, has a wide margin of error,
-or is dependent on the current political or economic conditions, they
-can shape how interested parties make funding decisions or otherwise
-lend support. Therefore, the key issue becomes – how accurate are polls
-taken well in advance of election day?
+**Generic Polling - Looking at the Past**
+
+Polls are used to predict the outcome of national, state, and local
+elections in every cycle. Polls are helpful for the candidates because
+they get a rough sense of their odds of winning and polls on specific
+issues can also help inform and/or shape a politician’s stance. More
+importantly, though, the media, corporations, investors, foreign
+nations, and many more actors all follow polling closely because they
+have an interest in which party will win control of the White House or
+the United States Congress. Even when any single poll is relatively
+uninformative, has a wide margin of error, or is dependent on the
+current political or economic conditions, they can shape how interested
+parties make funding decisions or otherwise lend support. Therefore, the
+key issue becomes – how accurate are polls taken well in advance of
+election day?
 
 As seen in the plot below of the lead up to the 2018 Midterm Elections,
 at some points during early in the year, Democrats held an almost 20
