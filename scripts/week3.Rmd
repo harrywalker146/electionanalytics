@@ -182,8 +182,8 @@ polls_df %>%
   filter(emonth == 10) %>%
   filter(year %in% c(2018,2014,2010,2006,2002,1998,1994,1990,1986,1982,1978,1974,1970,1966,1962)) %>%
   group_by(emonth, year) %>%
-  mutate(winner_support = case_when(winner_party == 'R' 
-                            & party == 'R' ~ support,
+  mutate(winner_support = case_when(
+    winner_party == 'R' & party == 'R' ~ support,
                             winner_party == 'D' 
                             & party == 'D' ~ support)) %>%
   group_by(year) %>% 

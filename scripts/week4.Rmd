@@ -1,0 +1,230 @@
+---
+title: "week4"
+output:
+  md_document:
+    variant: markdown_github
+date: '2022-10-06'
+---
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(janitor)
+
+library(ggplot2)
+
+
+library(readxl)
+
+library(ggplot2)
+library(blogdown)
+
+library(readr)
+library(usmap)
+library(rmapshaper)
+library(sf)
+```
+
+**Expert Ratings - Let's see how the Professionals do it**
+\tiny
+
+
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+h = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week4/house party vote share by district 1948-2020.csv")
+
+e = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week4/expert_rating.csv")
+
+experts2018 = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week4/2018_ratings_share.csv")
+
+get_congress_map = function() {
+  tmp_file = tempfile()
+  tmp_dir = tempdir()
+  download.file("https://cdmaps.polisci.ucla.edu/shp/districts114.zip", tmp_file)
+  unzip(zipfile=tmp_file, exdir=tmp_dir)
+  fpath = paste(tmp_dir, "districtShapes/districts114.shp", sep="/")
+  st_read(fpath)
+}
+districts = get_congress_map()
+```
+
+This week, I want to look at how expert ratings, more simply the “people who do this for a living,” faired when predicting the 2018 midterm elections. In particularly, I want to look at The Cook Political Report, Inside Elections, and Sabato’s Crystal Ball because they created forecasts for each congressional district. 
+
+These forecaster’s rate each district on a scale of 1 to 7. A 1 represents a “Solid Democratic” district, meaning there is no doubt that those constituents will choose a Democrat to represent them in Congress. 7 means the same thing for Republicans or “Solid Republican.” 2 and 3 are “likely” and “leaning” Democrat, while 5 and 6 are “likely” and “leaning” Republican respectively. 4’s represent toss-ups which are too hard to predict one way or another. Often, the media will keep monitor these races as “ones to watch.” 
+
+The goal is to see if expert predictions forecast the outcome of the elections accurately. (If they do, we will want to add them into our model) in the future). However, the issue remains that a 1-7 scale does not correspond to specific percentages. A forecaster may say a district is “Solid Democrat”, but it may be challenging to predict what share of the votes the Democrats will actually receive. Ultimately, I do not think we should be concerned. While it may be important to know the overall vote share of each party state and federal elections, the key question when forecasting the house is about which party is going to win control and by how many seats. Since we use single member districts with “first past the post” voting (with some exceptions), we only care about who wins. Because of this, I simplify the 1-7 scale to a 1-5 scale. I have eliminated the “Lean” category and expanded the “Likely” and “Toss-up” category. 
+As seen below, the first map indicates actual results of the 2018 Midterm Elections. While there are some races that are a deep shade of blue (heavily Democrat) or a deep shade of red (heavily Republican), most races end up being relatively close (purple shades). However, when we compare this with the simplified expert predictions, most seats have been written off as not very competitive. 
+
+Finally, I wanted to see the accuracy of the expert forecasts to see if they should be part of our models. As we can see, there are only a handful of white districts (ones that the average expert ratings predicted incorrectly. This means that expert ratings could be very important for my models going forward.
+
+
+
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE, cache=TRUE}
+R_2018 <- h %>%
+  filter(raceYear == 2018) %>% 
+  select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent) %>%
+  # summarize party vote share by district
+  group_by(district_num, State) %>%
+  summarise(Rep_votes_pct = RepVotesMajorPercent,
+            Dem_votes_pct = DemVotesMajorPercent) %>%
+  mutate(R_win_margin = Rep_votes_pct - Dem_votes_pct) %>%
+  # rename district and state variable to match shapefile
+  rename(DISTRICT = district_num, STATENAME = State) %>%
+  filter(STATENAME != "Alaska" & STATENAME != "Hawaii")
+
+
+
+# merge
+districts$DISTRICT <- as.numeric(districts$DISTRICT)
+districts <- districts %>% left_join(R_2018, by=c("DISTRICT", "STATENAME"))
+
+
+districts_simp <- rmapshaper::ms_simplify(districts, keep = 0.01)
+
+districts_simp = districts_simp %>%
+  filter(STATENAME != "Alaska" & STATENAME != "Hawaii")
+ggplot() + 
+  geom_sf(data=districts_simp,aes(fill=R_win_margin),
+          inherit.aes=FALSE,alpha=1) + 
+  scale_fill_gradient(low = "blue", high = "red", limits=c(-100,100)) +
+  coord_sf(xlim=c(-130, -70), ylim=c(25, 50), expand = FALSE) +  
+  labs(title = "Republican Win Margin by U.S. Congressional District, 2018")+
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+```
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+e_2018 <- experts2018 %>%
+  mutate(expert_rating = case_when(
+    avg <= 2 ~ "Solid Dem",
+    avg > 2 & avg <= 3.5  ~ "Likely Dem",
+    avg > 3.5 & avg <= 4.5 ~ "Toss Up",
+    avg > 4.5 & avg <= 6 ~ "Likely Rep",
+    avg > 6 ~ "Solid Rep")) %>%
+  rename(CD="District") %>%
+  na.omit()
+
+
+experts_temp <- h %>%
+  filter(raceYear == 2018) %>% 
+  select(raceYear, State, district_num, RepVotesMajorPercent, DemVotesMajorPercent, CD)
+
+experts_temp <- left_join(experts_temp, e_2018, by="CD") %>%
+  rename(DISTRICT="district_num",STATENAME="State")
+
+
+district_map_experts <- districts %>%
+  left_join(experts_temp,
+            by = c("DISTRICT",
+                   "STATENAME"))
+# To plot faster
+district_plot_experts_simp <- rmapshaper::ms_simplify(district_map_experts, keep = 0.01)
+# plot 2018 seat share
+
+
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "AK-AL"] <- "AK-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "WY-AL"] = "WY-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "VT-AL"] = "VT-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "SD-AL"] = "SD-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "ND-AL"] = "ND-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "MT-AL"] = "MT-01"
+district_plot_experts_simp$CD[district_plot_experts_simp$CD == "DE-AL"] = "DE-01"
+  
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "AK-01"] = "Likely Rep"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "WY-01"] = "Solid Rep"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "VT-01"] = "Solid Dem"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "SD-01"] = "Solid Rep"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "ND-01"] = "Solid Rep"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "MT-01"] = "Solid Rep"
+district_plot_experts_simp$expert_rating[district_plot_experts_simp$CD == "DE-01"] = "Solid Dem"
+ 
+
+cols <- c("Solid Dem" = "blue", "Likely Dem" = "lightskyblue", "Toss Up" = "white", "Likely Rep" = "red", "Solid Rep" = "red4")
+
+
+ggplot() +
+  geom_sf(data = district_plot_experts_simp,
+          aes(fill = expert_rating),
+          inherit.aes = FALSE,
+          alpha = 1) +
+  scale_fill_manual(values = cols,
+                   name = "Predictions") +
+  coord_sf(xlim = c(-125.27, -66.57),
+           ylim = c(23.75, 50.23),
+           expand = FALSE) +
+  labs(title = "Expert Seat Predictions by U.S. Congressional District, 2018") +
+  guides(fill = guide_legend(ncol = 1)) +
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+results2018 = h %>% filter(raceYear == 2018) %>% select(State,district_num, CD,WinnerParty) %>%
+  rename(DISTRICT="district_num",
+         STATENAME="State")
+
+results2018$CD[results2018$CD == "AK-AL"] = "AK-01"
+results2018$CD[results2018$CD == "WY-AL"] = "WY-01"
+results2018$CD[results2018$CD == "VT-AL"] = "VT-01"
+results2018$CD[results2018$CD == "SD-AL"] = "SD-01"
+results2018$CD[results2018$CD == "ND-AL"] = "ND-01"
+results2018$CD[results2018$CD == "MT-AL"] = "MT-01"
+results2018$CD[results2018$CD == "DE-AL"] = "DE-01"
+
+experts2018_accuracy = experts2018 %>% select(District, avg) %>%
+  rename(CD="District")
+
+experts2018_accuracy = left_join(experts2018_accuracy, results2018, by ="CD") 
+
+experts2018_accuracy = experts2018_accuracy %>%
+  mutate(accurate_prediction = case_when(
+    WinnerParty == "R" & avg > "4" ~ "Yes",
+    WinnerParty == "R" & avg < "4" ~ "No",
+    WinnerParty == "D" & avg < "4" ~ "Yes",
+    WinnerParty == "D" & avg > "4" ~ "No"))
+
+experts2018_accuracy = left_join(districts, experts2018_accuracy,by = c("DISTRICT",
+                   "STATENAME")) 
+map_expers2018_accuracy <- rmapshaper::ms_simplify(experts2018_accuracy, keep = 0.01)
+
+
+cols2 <- c("Yes" = "black", "No" = "white")
+map_expers2018_accuracy$accurate_prediction = as.character(map_expers2018_accuracy$accurate_prediction)
+
+ggplot() +
+  geom_sf(data = map_expers2018_accuracy,
+          aes(fill = accurate_prediction),
+          inherit.aes = FALSE,
+          alpha = 1) +
+  scale_fill_manual(values = cols2,
+                   name = "Accurate Predictions") +
+  coord_sf(xlim = c(-125.27, -66.57),
+           ylim = c(23.75, 50.23),
+           expand = FALSE) +
+  labs(title = "Expert Ratings Accuracy, 2018") +
+  guides(fill = guide_legend(ncol = 1)) +
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+```
+
+**Model Update - None This Week**
+
+\tiny
+
+While it may be tempting to use expert ratings in our models immediately, there are a few key reasons why it may be smart to hold off. First, the data we have available does not have expert ratings for all 435 districts from each election, so adding this information into my generical polling model (what I did last week) is impossible. It also compromises our models if we have misaligned expert ratings. For example, if we have ratings for one congressional district from 2012 and 2014, but another district’s training data is from 2016 and 2018, the predictions will no longer be consistent. Second, because 2020 was a census year, most districts got tweaked. While most changes are minor, many states have gerrymandered maps, giving the party in power a partisan edge. Third, while my model from last week using generic polling has significant room to improve, expert ratings already consider polling data. Because I want to avoid co-linearity in my predictors, it does not make sense to mix polling with expert ratings. 
