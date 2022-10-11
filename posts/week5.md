@@ -16,7 +16,11 @@ more well-known). Campaigns also use ads to attack opponents for their
 controversial views, affiliations with certain people or industries, or
 public missteps while shining a light on the quality of the character.
 
-As we can see from the bar plots below, Democrats published many more
+Both parties have similar breakdowns when it comes to the tone of their
+advertisements, with attack (criticizing the opponent), contrast
+(comparing the two candidates), and promote (highlighting personal
+qualities, voting records, beliefs, etc) each making up roughly 33% of
+all advertisements for each party. Also, Democrats published many more
 advertisements than Republicans during the 2018 midterm cycle. While
 this is not surprising because Democrats were trying to capitalize on
 anti-Trump sentiment to recapture the house (midterms are normally a
@@ -26,12 +30,7 @@ York, California, and Texas have a high number of advertisements because
 of large populations and many house races, swing states like Virginia,
 Pennsylvania, Michigan, have high volume. This may be because many of
 the house races in these states are competitive, leading for candidates
-to want to advertise more. In addition, both parties have similar
-breakdowns when it comes to the tone of their advertisements, with
-attack (criticizing the opponent), contrast (comparing the two
-candidates), and promote (highlighting personal qualities, voting
-records, beliefs etc) each making up roughly 33% of all advertisements
-for each party.
+to want to advertise more.
 
 <img src="week5_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
@@ -270,11 +269,9 @@ be helpful moving forward when these races.
 
 As seen below, the results are often not very accurate when compared
 next to the actual outcome (the model had an overall Mean Squared Error
-of 54.57). However, this model marks an improvement over the district
-level grouping because advertising is a significant predictor. Also,
-this strategy of pooling together observations may be important going
-forward if we want to factor local characteristics like advertising or
-other fundamentals.
+of 54.57). However this strategy of pooling together observations may be
+important going forward if we want to factor local characteristics like
+advertising or other fundamentals.
 
 | state          | district | dem_votes_major_percent |     pred |
 |:---------------|:---------|------------------------:|---------:|
