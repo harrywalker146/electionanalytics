@@ -156,7 +156,7 @@ ggplot(graph_ads_2018, aes(fct_reorder(state, total_ad_count), y = total_ad_coun
   coord_flip() +
   scale_fill_manual(values = c("blue", "red3"))+
   geom_col(position = "dodge") +
-  labs(title = "Total Ads by State and Party, 2018 Midterms") + xlab("State") + ylab("Total Ad COunt")
+  labs(title = "Total Ads by State and Party, 2018 Midterms") + xlab("State") + ylab("Total Ad Count")
 
 
 ```
