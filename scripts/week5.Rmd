@@ -1,0 +1,270 @@
+---
+title: "week5"
+output:
+  md_document:
+    variant: markdown_github
+date: '2022-10-08'
+---
+
+
+**Air Wars - Political Advertisements**
+\tiny
+
+
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+library(tidyverse)
+library(janitor)
+
+library(ggplot2)
+
+
+library(readxl)
+
+library(ggplot2)
+library(blogdown)
+
+library(readr)
+library(usmap)
+library(rmapshaper)
+library(sf)
+library(knitr)
+
+git push -f origin master
+```
+
+This week, I want to investigate political advertisements and test if they are an effective predictor of political performance. In the past few election cycles, political campaign spending has exploded. In 2022, political campaigns are expected to spend close to [$10 billion](https://www.cnbc.com/2022/09/26/2022-midterms-candidates-spend-over-6point4-billion-on-ads-making-race-one-of-the-most-expensive-ever.html.)
+
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+ad_creative  <- readRDS("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week5/ads_2006_2018.rds")
+```
+
+Whether people are watching TV, listening to the radio, using social media, or streaming platforms, political advertisements are everywhere. Advertisements help introduce voters to the candidate. This is especially true in local or congressional races where the constituency may not be as familiar with the candidates (unlike Senate, Gubernatorial, or Presidential races where candidates are oftentimes more well-known). Campaigns also use ads to attack opponents for their controversial views, affiliations with certain people or industries, or public missteps while shining a light on the quality of the character. 
+
+As we can see from the bar plots below, Democrats published many more advertisements than Republicans during the 2018 midterm cycle. While this is not surprising because Democrats were trying to capitalize on anti-Trump sentiment to recapture the house (midterms are normally a referendum on the current administration), what is interesting are the states with the most total advertisement. While it makes sense that New York, California, and Texas have a high number of advertisements because of large populations and many house races, swing states like Virginia, Pennsylvania, Michigan, have high volume. This may be because many of the house races in these states are competitive, leading for candidates to want to advertise more. In addition, both parties have similar breakdowns when it comes to the tone of their advertisements, with attack (criticizing the opponent), contrast (comparing the two candidates), and promote (highlighting personal qualities, voting records, beliefs etc) each making up roughly 33% of all advertisements for each party. 
+
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+ad_creative %>%
+  group_by(cycle, party) %>% mutate(tot_n=n()) %>% ungroup() %>%
+  group_by(cycle, party, ad_tone) %>% summarise(pct=n()*100/first(tot_n)) %>%
+  filter(!is.na(ad_tone), !is.na(party)) %>%
+  ggplot(aes(x = cycle, y = pct, fill = ad_tone, group = party)) +
+  geom_bar(stat = "identity") +
+  scale_x_continuous(breaks = c(2006, 2010, 2012, 2014, 2016, 2018)) + # 2014?
+  #coord_flip() +
+  # ggtitle("Campaign Ads Aired By Tone") +
+  scale_fill_manual(values = c("red","orange","gray","darkgreen","white"), name = "tone") +
+  xlab("") + ylab("%") +
+  facet_wrap(~ party) + theme_minimal() +
+  theme(axis.title = element_text(size=20),
+        axis.text = element_text(size=15),
+        strip.text.x = element_text(size = 20))
+```
+
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+
+ad_creative = ad_creative[!is.na(ad_creative$district),]
+ad_creative$district = as.character(as.numeric(ad_creative$district))
+
+test = ad_creative %>%
+  group_by(cycle,state,district,party) %>%
+  mutate(tot_n=n()) %>% ungroup() %>%
+  group_by(cycle, state, district,party, ad_tone) %>% 
+  mutate(tone = n()) %>% ungroup() %>%
+  group_by(cycle, state, district,party, ad_purpose) %>% 
+  mutate(purpose = n()) %>% ungroup() %>%
+  select(cycle, state, district,party,ad_purpose, ad_tone, tot_n, tone, purpose) 
+```
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+
+unique(test$district)
+
+as.numeric(ad_creative$district)
+```
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+total_ads = test %>% 
+  pivot_wider(names_from = c(party),
+              values_from = c(tot_n), 
+              values_fn = "mean") %>% unique() %>%
+  select(cycle, state, district, Democrat, Republican, "NA") %>%
+  group_by(cycle, state, district) %>%
+  fill(c(Democrat, Republican, "NA"), .direction = "updown") %>% unique() %>% rename(Other_Party = "NA")
+
+
+total_tone = test %>% 
+  pivot_wider(names_from = c(party, ad_tone),
+              values_from = c(tone), 
+              values_fn = "mean") %>% unique %>%
+  select(cycle, state, district, 
+         Democrat_contrast, Democrat_attack, Democrat_promote, Democrat_NA, 
+         Republican_contrast, Republican_attack, Republican_promote, Republican_NA, 
+         NA_contrast, NA_attack, NA_promote, NA_NA) %>%
+  group_by(cycle, state, district) %>%
+  fill(c( Democrat_contrast, Democrat_attack, Democrat_promote, Democrat_NA, 
+         Republican_contrast, Republican_attack, Republican_promote, Republican_NA, 
+         NA_contrast, NA_attack, NA_promote, NA_NA), .direction = "updown") %>% unique() %>%
+  rename(Democrat_other_tone = "Democrat_NA",
+         Republican_other_tone = "Republican_NA",
+         Other_contrast = "NA_contrast",
+         Other_attack = "NA_attack",
+         Other_promote = "NA_promote",
+         Other_other_tone = "NA_NA")
+
+total_purpose = test %>% 
+  pivot_wider(names_from = c(party, ad_purpose),
+              values_from = c(purpose), 
+              values_fn = "mean") %>% unique() %>%
+  select(cycle, state, district,
+         Democrat_policy, Democrat_both, Democrat_personal, Democrat_NA,
+         Republican_policy, Republican_both, Republican_personal, Republican_NA,
+         NA_policy, NA_both, NA_personal, NA_NA) %>%
+  group_by(cycle, state, district) %>%
+  fill(c(Democrat_policy, Democrat_both, Democrat_personal, Democrat_NA,
+         Republican_policy, Republican_both, Republican_personal, Republican_NA,
+         NA_policy, NA_both, NA_personal, NA_NA), .direction = "updown") %>% unique() %>%
+  rename(Democrat_other_purpose = "Democrat_NA",
+         Republican_other_purpose = "Republican_NA",
+         Other_policy = "NA_policy",
+         Other_both = "NA_both",
+         Other_personal = "NA_personal",
+         Other_other_purpose = "NA_NA")
+
+df_list <- list(total_ads, total_tone, total_purpose)      
+
+
+
+#merge all data frames together
+ads_full_df = df_list %>% reduce(full_join, by=c("cycle","state","district")) %>%ungroup()
+
+ads_full_df = ads_full_df[which(!is.na(ads_full_df$state)),]
+ads_full_df[is.na(ads_full_df)] = 0
+```
+
+
+
+
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+
+graph_ads_2018 = ads_full_df %>%
+  mutate(state = as.factor(state)) %>%
+  filter(cycle == "2018") %>%
+  select(state, Democrat, Republican) %>% pivot_longer(cols = c("Democrat","Republican")) %>%
+  rename(party = "name",
+         total_ad_count = "value")
+
+ggplot(graph_ads_2018, aes(fct_reorder(state, total_ad_count), y = total_ad_count, fill = party)) + 
+  # geom_bar(stat = "identity")+
+  coord_flip() +
+  scale_fill_manual(values = c("blue", "red3"))+
+  geom_col(position = "dodge")
+
+
+```
+*Blog Extension - Building the Models*
+\tiny
+The next step is to incorporate the number of advertisements into a model at the district level. To do this, I took all available data for each district and made the independent variable the proportion of ads run by Democrats in that district. For example, if Democrats paid for 65 out of every 100 ads in a district during a cycle, the variable used to predict overall Democratic vote share would by .65. I thought it was best to keep the data as general as possible because there are many districts that did not run certain types of ads. Also, wanted to use a standard scale for any predictor instead of the absolute number of ads since campaigns vary widely in funding and population. There are Democratic campaigns with huge constituencies and funding that can afford to pay for many more ads than a candidate from a smaller district. Using the proportion of ads run makes it relative to the Republican contender. 
+
+We can immediately see this result is unreliable because the model is predicting values over 100% and below 0%. This is most likely caused by each district only having, at most, three observations because the training data is only from the 2006, 2010, and 2014 midterm elections. Going forward, it will be very hard to incorporate this data in my model if I group by district. 
+```{r, warning=FALSE,echo=FALSE, message=FALSE}
+historical_results = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week4/house party vote share by district 1948-2020.csv") %>% clean_names()
+
+
+dem_results <- historical_results %>% 
+  select(race_year, state, area, dem_votes_major_percent) %>% 
+  rename(year = "race_year") %>% 
+  separate(area, into = c("area", "district"), sep = " ") %>% 
+  select(-area) %>% 
+  mutate(district = case_when(
+    district == "Large" ~ "AL",
+    TRUE ~ district
+  )) %>% rename(cycle = "year") %>%
+  #filter out rows where candidates run unopposed
+  filter(dem_votes_major_percent >= 0.001 & dem_votes_major_percent < 100)
+
+dem_results$district[which(dem_results$district == "AL")] = 1
+dem_results = dem_results[c(-which(dem_results$cycle=="2018" & dem_results$state=="Maine" & dem_results$district=="2" & dem_results$dem_votes_major_percent==49.59)),]
+
+
+# Joining the data and nesting by state and district
+train_data = left_join(ads_full_df,dem_results, by = c("cycle", "state", "district")) %>% 
+  mutate(dem_ads_pct = Democrat/(Democrat+Republican)) %>%
+  filter(dem_votes_major_percent >= 0.001 & dem_votes_major_percent < 100) %>%
+  filter(cycle != 2018) %>% 
+  group_by(state, district) %>% 
+  filter(n() > 1) %>% # Filtering out single data rows
+  group_nest() %>% 
+  mutate(data = map(data, ~unnest(., cols = c())))
+
+
+test_data <- left_join(ads_full_df,dem_results, by = c("cycle", "state", "district")) %>% 
+  mutate(dem_ads_pct = Democrat/(Democrat+Republican)) %>%
+  filter(cycle == 2018) %>% 
+  group_by(state, district) %>% 
+  group_nest() %>% 
+  mutate(data = map(data, ~unnest(., cols = c())))
+
+
+models <- train_data %>% 
+  mutate(model = map(data, ~lm(dem_votes_major_percent ~ dem_ads_pct, 
+                                  data = .x))) %>% 
+  select(-data)
+
+model_results <- models %>% 
+  mutate(r_squared = map_dbl(model, ~summary(.x)$r.squared))
+
+
+pred_2018 <- test_data %>%
+  # inner join as there may not be historical models for some districts
+  inner_join(models, by = c("state", "district")) %>%
+  mutate(pred = map_dbl(.x = model, .y = data, ~predict(object = .x, newdata = as.data.frame(.y)))) %>%
+  select(state, district, pred)
+
+
+knitr::kable(pred_2018)
+```
+
+Instead, I tried removing the district level grouping, viewing all observations as one large pool.  This way, the training set now has over 450 observations. The downside is that we lose all the district level nuance. Without the grouping, some of the observations appear very abnormal. For example, a Democrat running in a very liberal district may not run ads because he/she is expected to win easily, or a Democrat running in a heavily conservative district may not run ads because he/she is expected to lose easily (and vice versa). Because of this, there will be observations where Democrats run 0% of the ads but win by a large margin while losing in other districts. For this reason, I decided to remove any observations with less than 10% and more than 90% of the ads run by Democrats. When plotting the results, we can see a clear positive relationship between ads run by Democrats and the vote share. Advertising also had a p-value less than 0.05, meaning it was significant predictor. While advertising may be unhelpful for predicting non-competitive districts, these races normally are called for one side or the other well in advance of the election. Ultimately, we care about correctly predicting competitive districts, and advertising may prove to be helpful moving forward when these races.  
+
+```{r}
+non_district_data = left_join(ads_full_df,dem_results, by = c("cycle", "state", "district")) %>% 
+  mutate(dem_ads_pct = Democrat/(Democrat+Republican)) %>% 
+  ungroup() %>% 
+  select(cycle, state, district, dem_votes_major_percent, dem_ads_pct) 
+
+
+non_district_data = non_district_data[which(!is.na(non_district_data$dem_votes_major_percent)),]
+non_district_data = non_district_data[which(!is.na(non_district_data$dem_ads_pct)),]
+
+train_non_district= non_district_data %>% filter(cycle != "2018") %>% 
+  filter(dem_ads_pct > .1 & dem_ads_pct < .9)
+test_non_district= non_district_data %>% filter(cycle == "2018")%>% 
+  filter(dem_ads_pct > .1 & dem_ads_pct < .9)
+
+
+all_districts_model = lm(dem_votes_major_percent~dem_ads_pct, data = train_non_district)
+
+summary(all_districts_model)
+
+plot(all_districts_model)
+
+plot(train_non_district$dem_ads_pct, train_non_district$dem_votes_major_percent)
+abline(all_districts_model, col="steelblue")
+
+test_non_district$pred = predict(all_districts_model, test_non_district)
+
+
+knitr::kable(test_non_district)
+```
+
+
+```{r}
+plot(train_non_district$dem_ads_pct[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], train_non_district$dem_votes_major_percent[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], main = "Proportion of Democrat Run Ads vs Vote Share by District, 2006-2014", xlab = "Proportion of Democrat Run Ads", ylab = "Democrat Vote Share")
+abline(all_districts_model, col="steelblue")
+
+```
+
