@@ -36,27 +36,30 @@ for each party.
 ![](week5_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
 ![](week5_files/figure-markdown_github/unnamed-chunk-6-1.png) *Blog
-Extension - Building the Models* The next step is to incorporate the
-number of advertisements into a model at the district level. To do this,
-I took all available data for each district and made the independent
-variable the proportion of ads run by Democrats in that district. For
-example, if Democrats paid for 65 out of every 100 ads in a district
-during a cycle, the variable used to predict overall Democratic vote
-share would by .65. I thought it was best to keep the data as general as
-possible because there are many districts that did not run certain types
-of ads. Also, wanted to use a standard scale for any predictor instead
-of the absolute number of ads since campaigns vary widely in funding and
-population. There are Democratic campaigns with huge constituencies and
-funding that can afford to pay for many more ads than a candidate from a
-smaller district. Using the proportion of ads run makes it relative to
-the Republican contender.
+Extension - Building the Models*
+
+The next step is to incorporate the number of advertisements into a
+model at the district level. To do this, I took all available data for
+each district and made the independent variable the proportion of ads
+run by Democrats in that district. For example, if Democrats paid for 65
+out of every 100 ads in a district during a cycle, the variable used to
+predict overall Democratic vote share would by .65. I thought it was
+best to keep the data as general as possible because there are many
+districts that did not run certain types of ads. Also, wanted to use a
+standard scale for any predictor instead of the absolute number of ads
+since campaigns vary widely in funding and population. There are
+Democratic campaigns with huge constituencies and funding that can
+afford to pay for many more ads than a candidate from a smaller
+district. Using the proportion of ads run makes it relative to the
+Republican contender.
 
 We can immediately see this result is unreliable because the model is
-predicting values over 100% and below 0%. This is most likely caused by
-each district only having, at most, three observations because the
-training data is only from the 2006, 2010, and 2014 midterm elections.
-Going forward, it will be very hard to incorporate this data in my model
-if I group by district.
+predicting values over 100% and below 0% (for example Arizona’s 8th
+District and Georgia’s 8th District). This is most likely caused by each
+district only having, at most, three observations because the training
+data is only from the 2006, 2010, and 2014 midterm elections. Going
+forward, it will be very hard to incorporate this data in my model if I
+group by district.
 
 | state          | district |        pred |
 |:---------------|:---------|------------:|
@@ -262,7 +265,7 @@ or the other well in advance of the election. Ultimately, we care about
 correctly predicting competitive districts, and advertising may prove to
 be helpful moving forward when these races.
 
-![](week5_files/figure-markdown_github/unnamed-chunk-8-1.png)![](week5_files/figure-markdown_github/unnamed-chunk-8-2.png)
+![](week5_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 | state          | district | dem_votes_major_percent |     pred |
 |:---------------|:---------|------------------------:|---------:|

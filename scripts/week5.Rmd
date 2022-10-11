@@ -159,11 +159,10 @@ ggplot(graph_ads_2018, aes(fct_reorder(state, total_ad_count), y = total_ad_coun
 
 
 ```
+\tiny
 *Blog Extension - Building the Models*
 \tiny
-The next step is to incorporate the number of advertisements into a model at the district level. To do this, I took all available data for each district and made the independent variable the proportion of ads run by Democrats in that district. For example, if Democrats paid for 65 out of every 100 ads in a district during a cycle, the variable used to predict overall Democratic vote share would by .65. I thought it was best to keep the data as general as possible because there are many districts that did not run certain types of ads. Also, wanted to use a standard scale for any predictor instead of the absolute number of ads since campaigns vary widely in funding and population. There are Democratic campaigns with huge constituencies and funding that can afford to pay for many more ads than a candidate from a smaller district. Using the proportion of ads run makes it relative to the Republican contender. 
 
-We can immediately see this result is unreliable because the model is predicting values over 100% and below 0%. This is most likely caused by each district only having, at most, three observations because the training data is only from the 2006, 2010, and 2014 midterm elections. Going forward, it will be very hard to incorporate this data in my model if I group by district. 
 ```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
 historical_results = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week4/house party vote share by district 1948-2020.csv") %>% clean_names()
 
@@ -182,7 +181,12 @@ dem_results <- historical_results %>%
 
 dem_results$district[which(dem_results$district == "AL")] = 1
 dem_results = dem_results[c(-which(dem_results$cycle=="2018" & dem_results$state=="Maine" & dem_results$district=="2" & dem_results$dem_votes_major_percent==49.59)),]
+```
 
+The next step is to incorporate the number of advertisements into a model at the district level. To do this, I took all available data for each district and made the independent variable the proportion of ads run by Democrats in that district. For example, if Democrats paid for 65 out of every 100 ads in a district during a cycle, the variable used to predict overall Democratic vote share would by .65. I thought it was best to keep the data as general as possible because there are many districts that did not run certain types of ads. Also, wanted to use a standard scale for any predictor instead of the absolute number of ads since campaigns vary widely in funding and population. There are Democratic campaigns with huge constituencies and funding that can afford to pay for many more ads than a candidate from a smaller district. Using the proportion of ads run makes it relative to the Republican contender. 
+
+We can immediately see this result is unreliable because the model is predicting values over 100% and below 0% (for example Arizona's 8th District and Georgia's 8th District). This is most likely caused by each district only having, at most, three observations because the training data is only from the 2006, 2010, and 2014 midterm elections. Going forward, it will be very hard to incorporate this data in my model if I group by district. 
+```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
 
 # Joining the data and nesting by state and district
 train_data = left_join(ads_full_df,dem_results, by = c("cycle", "state", "district")) %>% 
@@ -242,21 +246,12 @@ test_non_district= non_district_data %>% filter(cycle == "2018")%>%
 
 all_districts_model = lm(dem_votes_major_percent~dem_ads_pct, data = train_non_district)
 
-plot(train_non_district$dem_ads_pct, train_non_district$dem_votes_major_percent)
-abline(all_districts_model, col="steelblue")
-
 test_non_district$pred = predict(all_districts_model, test_non_district)
 
 plot(train_non_district$dem_ads_pct[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], train_non_district$dem_votes_major_percent[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], main = "Proportion of Democrat Run Ads vs Vote Share by District, 2006-2014", xlab = "Proportion of Democrat Run Ads", ylab = "Democrat Vote Share")
 abline(all_districts_model, col="steelblue")
 
-
 knitr::kable(test_non_district %>% select(state,district, dem_votes_major_percent, pred))
 ```
 
-
-```{r, echo=FALSE}
-
-
-```
 
