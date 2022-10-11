@@ -33,10 +33,11 @@ candidates), and promote (highlighting personal qualities, voting
 records, beliefs etc) each making up roughly 33% of all advertisements
 for each party.
 
-![](week5_files/figure-markdown_github/unnamed-chunk-3-1.png)
+<img src="week5_files/figure-markdown_github/unnamed-chunk-3-1.png" style="display: block; margin: auto;" />
 
-![](week5_files/figure-markdown_github/unnamed-chunk-6-1.png) *Blog
-Extension - Building the Models*
+<img src="week5_files/figure-markdown_github/unnamed-chunk-6-1.png" style="display: block; margin: auto;" />
+
+*Blog Extension - Building the Models*
 
 The next step is to incorporate the number of advertisements into a
 model at the district level. To do this, I took all available data for
@@ -265,7 +266,7 @@ or the other well in advance of the election. Ultimately, we care about
 correctly predicting competitive districts, and advertising may prove to
 be helpful moving forward when these races.
 
-![](week5_files/figure-markdown_github/unnamed-chunk-9-1.png)
+<img src="week5_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
 | state          | district | dem_votes_major_percent |     pred |
 |:---------------|:---------|------------------------:|---------:|

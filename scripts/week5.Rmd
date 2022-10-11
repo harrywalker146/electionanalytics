@@ -44,7 +44,7 @@ Whether people are watching TV, listening to the radio, using social media, or s
 As we can see from the bar plots below, Democrats published many more advertisements than Republicans during the 2018 midterm cycle. While this is not surprising because Democrats were trying to capitalize on anti-Trump sentiment to recapture the house (midterms are normally a referendum on the current administration), what is interesting are the states with the most total advertisement. While it makes sense that New York, California, and Texas have a high number of advertisements because of large populations and many house races, swing states like Virginia, Pennsylvania, Michigan, have high volume. This may be because many of the house races in these states are competitive, leading for candidates to want to advertise more. In addition, both parties have similar breakdowns when it comes to the tone of their advertisements, with attack (criticizing the opponent), contrast (comparing the two candidates), and promote (highlighting personal qualities, voting records, beliefs etc) each making up roughly 33% of all advertisements for each party. 
 
 
-```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
 ad_creative %>%
   group_by(cycle, party) %>% mutate(tot_n=n()) %>% ungroup() %>%
   group_by(cycle, party, ad_tone) %>% summarise(pct=n()*100/first(tot_n)) %>%
@@ -142,7 +142,7 @@ ads_full_df[is.na(ads_full_df)] = 0
 
 
 
-```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
 
 graph_ads_2018 = ads_full_df %>%
   mutate(state = as.factor(state)) %>%
@@ -155,10 +155,14 @@ ggplot(graph_ads_2018, aes(fct_reorder(state, total_ad_count), y = total_ad_coun
   # geom_bar(stat = "identity")+
   coord_flip() +
   scale_fill_manual(values = c("blue", "red3"))+
-  geom_col(position = "dodge")
+  geom_col(position = "dodge") +
+  labs(title = "Total Ads by State and Party, 2018 Midterms") + xlab("State") + ylab("Total Ad COunt")
 
 
 ```
+
+
+
 \tiny
 *Blog Extension - Building the Models*
 \tiny
@@ -228,7 +232,7 @@ knitr::kable(pred_2018)
 
 Instead, I tried removing the district level grouping, viewing all observations as one large pool.  This way, the training set now has over 450 observations. The downside is that we lose all the district level nuance. Without the grouping, some of the observations appear very abnormal. For example, a Democrat running in a very liberal district may not run ads because he/she is expected to win easily, or a Democrat running in a heavily conservative district may not run ads because he/she is expected to lose easily (and vice versa). Because of this, there will be observations where Democrats run 0% of the ads but win by a large margin while losing in other districts. For this reason, I decided to remove any observations with less than 10% and more than 90% of the ads run by Democrats. When plotting the results, we can see a clear positive relationship between ads run by Democrats and the vote share. Advertising also had a p-value less than 0.05, meaning it was significant predictor. While advertising may be unhelpful for predicting non-competitive districts, these races normally are called for one side or the other well in advance of the election. Ultimately, we care about correctly predicting competitive districts, and advertising may prove to be helpful moving forward when these races.  
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE, echo=FALSE, fig.width=12, fig.height=6, fig.align='center'}
 non_district_data = left_join(ads_full_df,dem_results, by = c("cycle", "state", "district")) %>% 
   mutate(dem_ads_pct = Democrat/(Democrat+Republican)) %>% 
   ungroup() %>% 
