@@ -268,6 +268,14 @@ be helpful moving forward when these races.
 
 <img src="week5_files/figure-markdown_github/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
+As seen below, the results are often not very accurate when compared
+next to the actual outcome (the model had an overall Mean Squared Error
+of 54.57). However, this model marks an improvement over the district
+level grouping because advertising is a significant predictor. Also,
+this strategy of pooling together observations may be important going
+forward if we want to factor local characteristics like advertising or
+other fundamentals.
+
 | state          | district | dem_votes_major_percent |     pred |
 |:---------------|:---------|------------------------:|---------:|
 | Alabama        | 5        |                   38.93 | 48.66400 |

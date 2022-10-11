@@ -255,7 +255,13 @@ test_non_district$pred = predict(all_districts_model, test_non_district)
 plot(train_non_district$dem_ads_pct[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], train_non_district$dem_votes_major_percent[train_non_district$dem_ads_pct > .1 & train_non_district$dem_ads_pct < .9], main = "Proportion of Democrat Run Ads vs Vote Share by District, 2006-2014", xlab = "Proportion of Democrat Run Ads", ylab = "Democrat Vote Share")
 abline(all_districts_model, col="steelblue")
 
-knitr::kable(test_non_district %>% select(state,district, dem_votes_major_percent, pred))
+
 ```
 
+As seen below, the results are often not very accurate when compared next to the actual outcome (the model had an overall Mean Squared Error of 54.57). However, this model marks an improvement over the district level grouping because advertising is a significant predictor. Also, this strategy of pooling together observations may be important going forward if we want to factor local characteristics like advertising or other fundamentals. 
+```{r, echo=FALSE, warning=FALSE,echo=FALSE, message=FALSE, echo=FALSE}
+# mean(all_districts_model$residuals^2)
+
+knitr::kable(test_non_district %>% select(state,district, dem_votes_major_percent, pred))
+```
 
