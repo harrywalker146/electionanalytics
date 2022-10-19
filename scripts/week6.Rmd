@@ -3,12 +3,6 @@ title: "week6"
 output:
   md_document:
     variant: markdown_github
-knit: (function(input, ...) {
-    rmarkdown::render(
-      input,
-      output_dir = "/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts"
-    )
-  })
 date: '2022-10-16'
 ---
 **The Ground Game - Week 6**
@@ -108,7 +102,7 @@ polls_cvap_vp_df = polls_cvap_vp_df %>%
 
 From the plot below, we can see that congressional districts, even in the same state, have very different levels of turnout. For example, in Texas, we can see that rural regions have lower turnout (corresponding to purple and blue shades). Urban areas have higher turnout, indicated by brighter shades of red. At first glance, this map seems to confirm an assumption both the Democrats and Republicans operate under: higher turnout helps the Democrats. This is because in rural states that are more conservative, turnout appears to be lower than urban areas. However, this concept may be misleading. For example, even though a rural, conservative district may have low turnout, there may not necessarily be liberal people who do not vote. Instead, it is possible that the district is politically homogenous, and higher turnout would lead to more conservatives voting. We can see this from the plot of contested races in 2018 compared to turnout. There is only a small linear relationship between turnout and Democratic vote share, meaning increased turnout only has a small positive relationship with Democratic success.
 
-```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
+```{r, echo=FALSE,warning=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center', cache=TRUE}
 #turnout visualization for 2018
 
 h <- read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week6/incumb_dist_1948-2020.csv")
@@ -172,7 +166,7 @@ ggplot(temp2 %>%
 
 
 
-```{r,  cache=TRUE, eval=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
 train_data = polls_cvap_vp_df %>% 
   filter(year == '2018' | year == '2020') %>%
   group_by(st_cd_fips, state) %>% 
@@ -192,8 +186,7 @@ model_results <- models %>%
          )
 ```
 
-*Building a Model*
-While turnout may not be useful in a linear model, we can use recent polls as a predictor and then simulate turnout for each party. In this method, we make a generalized linear model for each district, with every recent poll as an observation. Doing 10,000 simulations for each district, using the poll results as the probability of someone voting for a Democrat or Republican, we can get an average margin of victory in each district. From the histograms below, we can see that there are a wide range of outcomes for each seat that we have data for (32 districts in total). Unfortunately, when observing these results, we can see that this model may be problematic. For example, in many instances, neither party gets close to 50% of the vote. Obviously, this does not make sense because in most cases, there is only a Democrat and Republican candidate. While we will eventually predict all the house seats, in our district-level map, it probably makes sense to ignore these results for now. While simulation may be a good idea as we approach our final prediction, turnout is clearly not a useful predictor. 
+*Building a Model* - While turnout may not be useful in a linear model, we can use recent polls as a predictor and then simulate turnout for each party. In this method, we make a generalized linear model for each district, with every recent poll as an observation. Doing 10,000 simulations for each district, using the poll results as the probability of someone voting for a Democrat or Republican, we can get an average margin of victory in each district. From the histograms below, we can see that there are a wide range of outcomes for each seat that we have data for (32 districts in total). Unfortunately, when observing these results, we can see that this model may be problematic. For example, in many instances, neither party gets close to 50% of the vote. Obviously, this does not make sense because in most cases, there is only a Democrat and Republican candidate. While we will eventually predict all the house seats, in our district-level map, it probably makes sense to ignore these results for now. While simulation may be a good idea as we approach our final prediction, turnout is clearly not a useful predictor. 
 
 ```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
 test_data <- polls_df %>%

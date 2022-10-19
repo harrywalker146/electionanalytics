@@ -29,7 +29,7 @@ increased turnout only has a small positive relationship with Democratic
 success.
 
     ## Reading layer `districts114' from data source 
-    ##   `/private/var/folders/ry/qlvkbbt57l9_3tv9fw638k3m0000gn/T/RtmpTXIJCy/districtShapes/districts114.shp' 
+    ##   `/private/var/folders/ry/qlvkbbt57l9_3tv9fw638k3m0000gn/T/RtmpJJpR4C/districtShapes/districts114.shp' 
     ##   using driver `ESRI Shapefile'
     ## Simple feature collection with 436 features and 15 fields (with 1 geometry empty)
     ## Geometry type: MULTIPOLYGON
@@ -37,33 +37,13 @@ success.
     ## Bounding box:  xmin: -179.1473 ymin: 18.91383 xmax: 179.7785 ymax: 71.35256
     ## Geodetic CRS:  NAD83
 
-<img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+<img src="week6_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
-<img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="week6_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
-``` r
-train_data = polls_cvap_vp_df %>% 
-  filter(year == '2018' | year == '2020') %>%
-  group_by(st_cd_fips, state) %>% 
-  filter(n() > 1) %>% # Filtering out single data rows
-  group_nest() %>% 
-  mutate(data = map(data, ~unnest(., cols = c())))
-
-
-models = train_data %>% 
-  mutate(model_dem = map(data, ~glm(cbind(DemVotes, cvap-DemVotes) ~ DEM, data = .x, family="binomial"))) %>% 
-  mutate(model_rep = map(data, ~glm(cbind(RepVotes, cvap-RepVotes) ~ REP, data = .x, family="binomial"))) %>% 
-  select(-data)
-
-model_results <- models %>% 
-  mutate(standard_error_dem = map_dbl(model_dem, ~summary(.x)$coefficients[, 2][2]),
-         standard_error_rep = map_dbl(model_rep, ~summary(.x)$coefficients[, 2][2])
-         )
-```
-
-*Building a Model* While turnout may not be useful in a linear model, we
-can use recent polls as a predictor and then simulate turnout for each
-party. In this method, we make a generalized linear model for each
+*Building a Model* - While turnout may not be useful in a linear model,
+we can use recent polls as a predictor and then simulate turnout for
+each party. In this method, we make a generalized linear model for each
 district, with every recent poll as an observation. Doing 10,000
 simulations for each district, using the poll results as the probability
 of someone voting for a Democrat or Republican, we can get an average
@@ -79,44 +59,44 @@ these results for now. While simulation may be a good idea as we
 approach our final prediction, turnout is clearly not a useful
 predictor.
 
-<img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-2.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-3.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-4.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-5.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-6.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-7.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-8.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-9.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-10.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-11.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-12.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-13.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-14.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-15.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-16.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-17.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-18.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-19.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-20.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-21.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-22.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-23.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-24.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-25.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-26.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-27.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-28.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-29.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-30.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-31.png" style="display: block; margin: auto;" /><img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-7-32.png" style="display: block; margin: auto;" />
+<img src="week6_files/figure-markdown_github/unnamed-chunk-7-1.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-2.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-3.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-4.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-5.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-6.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-7.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-8.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-9.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-10.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-11.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-12.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-13.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-14.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-15.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-16.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-17.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-18.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-19.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-20.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-21.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-22.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-23.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-24.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-25.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-26.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-27.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-28.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-29.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-30.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-31.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-7-32.png" style="display: block; margin: auto;" />
 
 | state          | st_cd_fips |  pred_dem |  pred_rep | mean_democrat_win_margin |
 |:---------------|:-----------|----------:|----------:|-------------------------:|
-| California     | 0622       | 0.2220354 | 0.2906073 |               -20.458891 |
-| Florida        | 1213       | 0.3686113 | 0.3263571 |                10.128388 |
-| Florida        | 1227       | 0.3166663 | 0.2684526 |                 8.771930 |
-| Illinois       | 1713       | 0.2593444 | 0.3457982 |               -15.630252 |
-| Iowa           | 1901       | 0.3046030 | 0.2418445 |                 9.760589 |
-| Iowa           | 1902       | 0.3064553 | 0.2736335 |                 6.049822 |
-| Iowa           | 1903       | 0.3158108 | 0.2550524 |                14.532872 |
-| Kansas         | 2003       | 0.3521102 | 0.3032105 |                 9.502262 |
-| Maine          | 2301       | 0.4947502 | 0.2556307 |                32.620321 |
-| Maine          | 2302       | 0.3014435 | 0.3196930 |                 2.819237 |
-| Michigan       | 2603       | 0.3459113 | 0.3894398 |                -6.364922 |
-| Michigan       | 2608       | 0.3158895 | 0.2919566 |                 5.331179 |
-| Minnesota      | 2701       | 0.3234932 | 0.3771824 |                -4.885058 |
-| Minnesota      | 2702       | 0.3653585 | 0.3655082 |                 4.324324 |
-| Minnesota      | 2703       | 0.3995444 | 0.3174953 |                10.072993 |
-| Nebraska       | 3102       | 0.3017581 | 0.5467812 |               -31.177829 |
-| Nevada         | 3201       | 0.2462418 | 0.1148674 |                37.688442 |
-| Nevada         | 3202       | 0.2363129 | 0.3294454 |               -11.545293 |
-| Nevada         | 3203       | 0.2635670 | 0.2175362 |                11.344538 |
-| New Jersey     | 3403       | 0.2823976 | 0.2747623 |                 7.826087 |
-| New Jersey     | 3407       | 0.3267295 | 0.3243389 |                -5.070423 |
-| New Mexico     | 3502       | 0.2285342 | 0.1719934 |                14.081146 |
-| New York       | 3611       | 0.2166927 | 0.1432826 |                14.454277 |
-| New York       | 3619       | 0.2680315 | 0.2408428 |                 4.077670 |
-| North Carolina | 3711       | 0.3166000 | 0.4075260 |               -15.659341 |
-| North Carolina | 3713       | 0.2307081 | 0.2610819 |                -6.976744 |
-| Ohio           | 3901       | 0.2767639 | 0.2901091 |                -8.289242 |
-| Pennsylvania   | 4201       | 0.3139580 | 0.3282828 |                -2.523659 |
-| Pennsylvania   | 4208       | 0.3152016 | 0.1779728 |                25.106383 |
-| Pennsylvania   | 4217       | 0.4006544 | 0.3826833 |                 7.341772 |
-| Virginia       | 5102       | 0.2633871 | 0.2366750 |                 6.358382 |
-| Washington     | 5308       | 0.3240912 | 0.2942258 |                -2.597403 |
+| California     | 0622       | 0.2220354 | 0.2906073 |                -8.704062 |
+| Florida        | 1213       | 0.3686113 | 0.3263571 |                 1.754386 |
+| Florida        | 1227       | 0.3166663 | 0.2684526 |                11.147011 |
+| Illinois       | 1713       | 0.2593444 | 0.3457982 |                -9.764310 |
+| Iowa           | 1901       | 0.3046030 | 0.2418445 |                12.390925 |
+| Iowa           | 1902       | 0.3064553 | 0.2736335 |                 4.255319 |
+| Iowa           | 1903       | 0.3158108 | 0.2550524 |                12.903226 |
+| Kansas         | 2003       | 0.3521102 | 0.3032105 |                 6.329114 |
+| Maine          | 2301       | 0.4947502 | 0.2556307 |                31.421121 |
+| Maine          | 2302       | 0.3014435 | 0.3196930 |                -3.296703 |
+| Michigan       | 2603       | 0.3459113 | 0.3894398 |                -8.648649 |
+| Michigan       | 2608       | 0.3158895 | 0.2919566 |                 7.246377 |
+| Minnesota      | 2701       | 0.3234932 | 0.3771824 |                -5.649718 |
+| Minnesota      | 2702       | 0.3653585 | 0.3655082 |                -2.245707 |
+| Minnesota      | 2703       | 0.3995444 | 0.3174953 |                10.065359 |
+| Nebraska       | 3102       | 0.3017581 | 0.5467812 |               -25.655644 |
+| Nevada         | 3201       | 0.2462418 | 0.1148674 |                30.919220 |
+| Nevada         | 3202       | 0.2363129 | 0.3294454 |               -10.638298 |
+| Nevada         | 3203       | 0.2635670 | 0.2175362 |                 9.197652 |
+| New Jersey     | 3403       | 0.2823976 | 0.2747623 |                 4.621072 |
+| New Jersey     | 3407       | 0.3267295 | 0.3243389 |                -1.674277 |
+| New Mexico     | 3502       | 0.2285342 | 0.1719934 |                17.073171 |
+| New York       | 3611       | 0.2166927 | 0.1432826 |                14.044944 |
+| New York       | 3619       | 0.2680315 | 0.2408428 |                13.733075 |
+| North Carolina | 3711       | 0.3166000 | 0.4075260 |               -12.380952 |
+| North Carolina | 3713       | 0.2307081 | 0.2610819 |                -6.498952 |
+| Ohio           | 3901       | 0.2767639 | 0.2901091 |                -6.122449 |
+| Pennsylvania   | 4201       | 0.3139580 | 0.3282828 |               -11.578947 |
+| Pennsylvania   | 4208       | 0.3152016 | 0.1779728 |                30.468750 |
+| Pennsylvania   | 4217       | 0.4006544 | 0.3826833 |                 3.394256 |
+| Virginia       | 5102       | 0.2633871 | 0.2366750 |                 4.267161 |
+| Washington     | 5308       | 0.3240912 | 0.2942258 |                 3.583062 |
 
-<img src="/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/posts/week6_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
+<img src="week6_files/figure-markdown_github/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
 
 *Looking Ahead*
 
