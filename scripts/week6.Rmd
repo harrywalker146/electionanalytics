@@ -18,6 +18,9 @@ library(usmap)
 library(rmapshaper)
 library(sf)
 library(knitr)
+# 
+
+#     
 ```
 The “Ground Game”, Political Campaigns’ strategy to mobilize and persuade voters is critically important when trying to win elections. While persuading voters is becoming increasingly difficult as the country becomes more partisan, both political parties are realizing that success is predicated on turnout. There have been many large scale “get-out-the-vote” campaigns in recent years. For example, in 2018 during the Gubnatorial race, Stacey Abrams’s Campaign helped register hundreds of thousands of [voters](https://www.independent.co.uk/voices/georgia-election-stacey-abrams-biden-b1675670.html)
 ```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
@@ -140,6 +143,11 @@ districts_turnout <- rmapshaper::ms_simplify(districts_turnout, keep = 0.01)
 
 districts_turnout = districts_turnout %>%
   filter(STATENAME != "Alaska" & STATENAME != "Hawaii")
+
+```
+
+```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
+#visualizing 
 ggplot() + 
   geom_sf(data=districts_turnout,aes(fill=turnout),
           inherit.aes=FALSE,alpha=1) + 
@@ -153,10 +161,7 @@ ggplot() +
         axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
-```
 
-```{r, echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
-#visualizing 
 ggplot(temp2 %>%
   filter(DemVotesMajorPercent < 100 & DemVotesMajorPercent > 0), aes(x = turnout, y = DemVotesMajorPercent)) + 
   geom_point() +

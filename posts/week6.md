@@ -28,7 +28,7 @@ linear relationship between turnout and Democratic vote share, meaning
 increased turnout only has a small positive relationship with Democratic
 success.
 
-<img src="week6_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
+<img src="week6_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" /><img src="week6_files/figure-markdown_github/unnamed-chunk-5-2.png" style="display: block; margin: auto;" />
 
 *Building a Model* - While turnout may not be useful in a linear model,
 we can use recent polls as a predictor and then simulate turnout for
