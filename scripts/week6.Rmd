@@ -102,7 +102,7 @@ polls_cvap_vp_df = polls_cvap_vp_df %>%
 
 From the plot below, we can see that congressional districts, even in the same state, have very different levels of turnout. For example, in Texas, we can see that rural regions have lower turnout (corresponding to purple and blue shades). Urban areas have higher turnout, indicated by brighter shades of red. At first glance, this map seems to confirm an assumption both the Democrats and Republicans operate under: higher turnout helps the Democrats. This is because in rural states that are more conservative, turnout appears to be lower than urban areas. However, this concept may be misleading. For example, even though a rural, conservative district may have low turnout, there may not necessarily be liberal people who do not vote. Instead, it is possible that the district is politically homogenous, and higher turnout would lead to more conservatives voting. We can see this from the plot of contested races in 2018 compared to turnout. There is only a small linear relationship between turnout and Democratic vote share, meaning increased turnout only has a small positive relationship with Democratic success.
 
-```{r, echo=FALSE,warning=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center', cache=TRUE}
+```{r, echo=FALSE,warning=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center', cache=TRUE, include=FALSE}
 #turnout visualization for 2018
 
 h <- read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week6/incumb_dist_1948-2020.csv")
@@ -144,7 +144,7 @@ ggplot() +
   geom_sf(data=districts_turnout,aes(fill=turnout),
           inherit.aes=FALSE,alpha=1) + 
   scale_fill_gradient(low = "blue", high = "red", limits=c(0,1)) +
-  coord_sf(xlim=c(-120, -60), ylim=c(25, 50), expand = FALSE) +  
+  coord_sf(xlim=c(-130, -60), ylim=c(25, 50), expand = FALSE) +  
   labs(title = "Turnout by U.S. Congressional District, 2018 Midterm Elections")+
   theme_void() +
   theme(axis.title.x=element_blank(),
@@ -243,7 +243,7 @@ ggplot() +
   geom_sf(data=districts_simp,aes(fill=mean_democrat_win_margin),
           inherit.aes=FALSE,alpha=1) + 
   scale_fill_gradient(low = "blue", high = "red", limits=c(-50,50)) +
-  coord_sf(xlim=c(-120, -60), ylim=c(25, 50), expand = FALSE) +  
+  coord_sf(xlim=c(-130, -60), ylim=c(20, 50), expand = FALSE) +  
   labs(title = "Simulated Win Margin by Available U.S. Congressional District, 2018")+
   theme_void() +
   theme(axis.title.x=element_blank(),

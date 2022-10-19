@@ -28,17 +28,6 @@ linear relationship between turnout and Democratic vote share, meaning
 increased turnout only has a small positive relationship with Democratic
 success.
 
-    ## Reading layer `districts114' from data source 
-    ##   `/private/var/folders/ry/qlvkbbt57l9_3tv9fw638k3m0000gn/T/RtmpJJpR4C/districtShapes/districts114.shp' 
-    ##   using driver `ESRI Shapefile'
-    ## Simple feature collection with 436 features and 15 fields (with 1 geometry empty)
-    ## Geometry type: MULTIPOLYGON
-    ## Dimension:     XY
-    ## Bounding box:  xmin: -179.1473 ymin: 18.91383 xmax: 179.7785 ymax: 71.35256
-    ## Geodetic CRS:  NAD83
-
-<img src="week6_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
-
 <img src="week6_files/figure-markdown_github/unnamed-chunk-5-1.png" style="display: block; margin: auto;" />
 
 *Building a Model* - While turnout may not be useful in a linear model,
