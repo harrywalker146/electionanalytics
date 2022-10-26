@@ -31,23 +31,23 @@ In addition, I want to incorporate demographic information because
 certain voting groups turning out will be crucial to determine control
 of the house. As we can see from the plots below, minority groups often
 define congressional districts in different parts of the country, so
-catering to these voters and encouraging turnout is crucially important.
+catering to these voters and encouraging turnout are crucially
+important.
 
 <img src="week7_files/figure-markdown_github/unnamed-chunk-4-1.png" style="display: block; margin: auto;" /><img src="week7_files/figure-markdown_github/unnamed-chunk-4-2.png" style="display: block; margin: auto;" />
 
 **Pooled Model - Improvement of Last Week**
 
-Moving on to improving on my model from last week. Since last week’s
-grouped-by-district models were getting disastrously bad predictions, it
-makes sense to pool our data, viewing every district race from past
-midterm elections (2010, 2014, and 2018) as observations in the same
-group. Also, I want to factor in demographic data, because there are
-often important subtilties in the makeup of the district that can give
-us an indication of support for either party. For example, districts
-with high percentages of Black and/or Hispanic people may vote Democrat
-because traditionally these groups have voted for them in the past. We
-start by using every demographic predictor in the data to predict
-Democratic Vote Share, and we can see that the only significant
+Since last week’s grouped-by-district models were getting disastrously
+bad predictions, it makes sense to pool our data, viewing every district
+race from past midterm elections (2010, 2014, and 2018) as observations
+in the same group. Also, I want to factor in demographic data, because
+there are often important subtilties in the makeup of the district that
+can give us an indication of support for either party. For example,
+districts with high percentages of Black and/or Hispanic people may vote
+Democrat because traditionally these groups have voted for them in the
+past. We start by using every demographic predictor in the data to
+predict Democratic Vote Share, and we can see that the only significant
 predictor is the percentage of women in the district. Adjusted R-squared
 is only .13, so we know that using demographics alone will not help us.
 Using a stepwise backward method to eliminate variables, the predictors
