@@ -1,0 +1,84 @@
+---
+title: "A Terrible District Level Forecast"
+author: "Yao Yu"
+date: "9/29/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Loading in necessary libraries
+library(tidyverse)
+library(janitor)
+
+# Reading in the data
+expert_ratings <- read_csv("expert_rating.csv")
+historical_results <- read_csv("house party vote share by district 1948-2020.csv") %>% 
+  clean_names()
+
+#### NOTE: 2002, 2004, 2006, 2008, and 2010 cvap numbers are from 2012 ####
+#### NOTE: 2022 cvap numbers are from 2020 ####
+cvap <- read_csv("cvap_district_2002-2022_clean.csv")
+```
+
+```{r cleaning the data}
+# Selecting columns
+avg_ratings <- expert_ratings %>% 
+  select(year, state, district, avg_rating)
+
+dem_results <- historical_results %>% 
+  select(race_year, state, area, dem_votes) %>% 
+  rename("year" = "race_year") %>% 
+  separate(area, into = c("area", "district"), sep = " ") %>% 
+  select(-area) %>% 
+  mutate(district = case_when(
+    district == "Large" ~ "AL",
+    TRUE ~ district
+  ))
+
+# Joining the data and nesting by state and district
+train_data <- avg_ratings %>% 
+  filter(year != 2022) %>% 
+  # left join as there aren't ratings for every district
+  left_join(dem_results, by = c("year", "state", "district")) %>% 
+  left_join(cvap, by = c("year", "state", "district" = "cd")) %>% 
+  drop_na(cvap) %>% 
+  group_by(state, district) %>% 
+  filter(n() > 1) %>% # Filtering out single data rows
+  group_nest() %>% 
+  mutate(data = map(data, ~unnest(., cols = c())))
+
+test_data <- avg_ratings %>% 
+  filter(year == 2022) %>% 
+  left_join(cvap, by = c("year", "state", "district" = "cd")) %>% 
+  drop_na(cvap) %>% 
+  group_by(state, district) %>% 
+  group_nest() %>% 
+  mutate(data = map(data, ~unnest(., cols = c())))
+```
+
+```{r models}
+# Building TERRIBLE models
+models <- train_data %>% 
+  mutate(model = map(data, ~glm(cbind(dem_votes, cvap-dem_votes) ~ avg_rating, 
+                                  data = .x, family = binomial))) %>% 
+  select(-data)
+
+# Extracting TERRIBLE model results
+model_results <- models %>% 
+  mutate(mcf_r_squared = map_dbl(model, ~with(summary(.x), 1 - deviance/null.deviance)))
+
+# Predicting 2022 with a TERRIBLE model
+pred_2022 <- test_data %>%
+  # inner join as there may not be historical models for some districts
+  inner_join(models, by = c("state", "district")) %>% 
+  mutate(preds = map(.x = model, .y = data, ~predict(object = .x, newdata = as.data.frame(.y),
+                                                        se.fit = TRUE,
+                                                        type = "response")),
+         lower = map_dbl(.x = preds, ~.x$fit - (2 * .x$se.fit)),
+         fitted = map_dbl(.x = preds, ~.x$fit),
+         upper = map_dbl(.x = preds, ~.x$fit + (2 * .x$se.fit))) %>%
+  select(state, district, lower, fitted, upper)
+```
+

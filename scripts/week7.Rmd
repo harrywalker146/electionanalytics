@@ -1,0 +1,159 @@
+---
+title: "week7"
+output:
+  md_document:
+    variant: markdown_github
+date: '2022-10-19'
+---
+**Week 7 - Shocks and Updated Model**
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+library(readxl)
+library(ggplot2)
+library(blogdown)
+library(readr)
+library(usmap)
+library(rmapshaper)
+library(sf)
+library(knitr)
+# 
+
+```
+When it comes to elections, the term “shocks” can be vague. For our purposes, it makes sense to think about political “shocks” as sudden events, news, legislation, or economic indicators that may change how people vote or galvanize turnout for a certain party. For example, the Dobbs decision overturning Roe vs Wade this summer may be important in this year’s midterms because Democrats have made it central to their national policy. These sudden events are also important because they can help explain, or, in many instances, become an excuse for why forecasters got their predictions wrong. This exact scenario played out in 2016 when many forecasters, including [FiveThirtyEight’s](https://fivethirtyeight.com/features/the-comey-letter-probably-cost-clinton-the-election/) Nate Silver who blamed James Comey’s last-minute memo about Hilary Clinton’s emails shortly before the election. However, the issue I have with this assessment is that in this case, how would Trump’s Access Hollywood tape not have counteracted the mobilization effect of the Comey Letter? In addition, what percentage of people were still on the fence days before the election and how many of these voters switched because of this scandal? While we will never know these answers, I do not believe that incorporating shocks into my model for the midterms makes sense. We ultimately care about who controls the house, so we must make a prediction for each district. Unfortunately, combing through every district race and trying to incorporate shocks on the district level (if there are any) is by no means guaranteed to add value to our model and could be incredibly challenging. Also, if we think of national shocks like the overturning of Roe or Inflation, the expert ratings already incorporate these factors as part of their analysis. Thus, by including expert ratings, we are already accounting for these phenomena. In addition, I want to incorporate demographic information because certain voting groups turning out will be crucial to determine control of the house. As we can see from the plots below, minority groups often define congressional districts in different parts of the country, so catering to these voters and encouraging turnout is crucially important. 
+
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+demographic_df = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week7/demographic_2009_2020.csv") %>%
+  mutate(district = as.character(as.integer(district)),
+         district = ifelse(is.na(district), 0, district)) %>%
+  rename(plus_65 = "65+",
+         hispanic = "hispanic or latino",
+         twenty_29 = "20_29",
+         thirty_44 = "30_44",
+         fourty5_64 = "45_64",
+         native_american = "native american",
+         pacific_island = "pacific islander")
+
+expert_rating = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week7/expert_rating.csv") %>%
+  mutate(district = as.character(as.integer(district)),
+         district = ifelse(is.na(district), 0, district)) %>%
+  select(year,state,district, avg_rating)
+
+popvote = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week7/house party vote share by district 1948-2020.csv") %>%
+  rename(district = "district_num",
+         year = "raceYear",
+         state = "State") %>% 
+  mutate(district = as.character(district)) %>%
+  select(year,state,district, DemVotesMajorPercent, RepVotesMajorPercent) %>%
+  filter(year != 2020 & DemVotesMajorPercent < 100 & DemVotesMajorPercent > 0)
+```
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center', include=FALSE}
+demographics_2018 = demographic_df %>% filter(year == 2018) %>%
+  rename(STATENAME = "state",
+         DISTRICT = "district")
+
+get_congress_map = function() {
+  tmp_file = tempfile()
+  tmp_dir = tempdir()
+  download.file("https://cdmaps.polisci.ucla.edu/shp/districts114.zip", tmp_file)
+  unzip(zipfile=tmp_file, exdir=tmp_dir)
+  fpath = paste(tmp_dir, "districtShapes/districts114.shp", sep="/")
+  st_read(fpath)
+}
+districts = get_congress_map()
+districts <- districts %>% left_join(demographics_2018, by=c("DISTRICT", "STATENAME"))
+
+districts <- rmapshaper::ms_simplify(districts, keep = 0.01)
+
+districts = districts %>%
+  filter(STATENAME != "Alaska" & STATENAME != "Hawaii")
+
+```
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
+ggplot() + 
+  geom_sf(data=districts,aes(fill=black),
+          inherit.aes=FALSE,alpha=1) + 
+  scale_fill_gradient(low = "white", high = "black", limits=c(0,1)) +
+  coord_sf(xlim=c(-130, -60), ylim=c(25, 50), expand = FALSE) +  
+  labs(title = "Percentage of African Americans by District, 2018")+
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+ggplot() + 
+  geom_sf(data=districts,aes(fill=hispanic),
+          inherit.aes=FALSE,alpha=1) + 
+  scale_fill_gradient(low = "white", high = "black", limits=c(0,1)) +
+  coord_sf(xlim=c(-130, -60), ylim=c(25, 50), expand = FALSE) +  
+  labs(title = "Percentage of Hispanics by District, 2018")+
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
+**Pooled Model - Improvement of Last Week**
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+expert_ratings_train = expert_rating %>% filter(year != 2022)
+
+demographic_train = demographic_df %>% filter(year != 2020)
+
+temp = left_join(popvote, expert_ratings_train, by=c("year","state","district"))
+
+train_df = left_join(temp,demographic_train, by=c("year","state","district")) %>% na.omit() %>% 
+  filter(year == 2010 | year == 2014 | year == 2018)
+
+
+
+expert_ratings_test = expert_rating %>% filter(year == 2022)
+
+demographic_test = demographic_df %>% filter(year == 2020)
+
+test_df = left_join(expert_ratings_test,demographic_test, by=c("state","district")) %>% na.omit()
+```
+Moving on to improving on my model from last week. Since last week’s grouped-by-district models were getting disastrously bad predictions, it makes sense to pool our data, viewing every district race from past midterm elections (2010, 2014, and 2018) as observations in the same group. Also, I want to factor in demographic data, because there are often important subtilties in the makeup of the district that can give us an indication of support for either party. For example, districts with high percentages of Black and/or Hispanic people may vote Democrat because traditionally these groups have voted for them in the past. We start by using every demographic predictor in the data to predict Democratic Vote Share, and we can see that the only significant predictor is the percentage of women in the district. Adjusted R-squared is only .13, so we know that using demographics alone will not help us. Using a stepwise backward method to eliminate variables, the predictors become the percentage of women, Hispanics, Native Americans, and Asians in the population. However, I want to take women out because there is so little variation (will always fluctuate around 50%) and because half of the people in each minority group are women (so I avoid factoring women in twice). I also want to add the percentage of African Americans in the district, so we account for every major minority group. 
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+pooled_model_demographics_full = lm(DemVotesMajorPercent~ female +  twenty_29 + thirty_44 + fourty5_64 + plus_65+white+black +hispanic+native_american+asian, data = train_df)
+
+kable(summary(pooled_model_demographics_full)$coef)
+
+library(MASS)
+step_demographic_model <- stepAIC(pooled_model_demographics_full, direction = "backward", 
+                      trace = FALSE)
+```
+Adding in the average expert ratings along with demographic information, we can see that all but two of the variables are significant, and adjusted R-squared improves to .708, a massive increase from the previous model. It is also clear that the presence of minorities helps Democrats, with the coefficients for all the groups present in the model having a positive relationship with the Democratic Vote Share. Doing an ANOVA test between a linear regression with only expert ratings and the pooled model with demographic data, we can see that there is a significant difference, so having the demographic information is adding value to our model. 
+
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+pooled_model = lm(DemVotesMajorPercent~ avg_rating +black +hispanic+asian+native_american, data = train_df)
+
+summary(pooled_model)
+
+anova(lm(DemVotesMajorPercent~ avg_rating, data = train_df), pooled_model)
+```
+
+Finally, I use this model to predict the 2022 races that we have expert ratings for, we can see that it is tracking well and giving reasonable predictions.
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE}
+test_df$prediction = predict(object = pooled_model, test_df)
+
+kable(test_df %>% 
+  dplyr::select(state,district,avg_rating, prediction))
+```
+
+
+**Next Steps**
+
+Looking forward to the final prediction, the demographic information is clearly crucial to incorporate in my model. The final piece will be to aggregate all the data for expert ratings in each district, so I can make predictions for the entire map. If they do not exist, I will try to make a crude version of my own, incorporating incumbency, the 2020 margin of victory and weighting the current generic ballot (because 2020 skewed Democrat where 2022 looks to be leaning Republican). 
