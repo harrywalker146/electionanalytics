@@ -1,0 +1,274 @@
+---
+title: "week8"
+output:
+  md_document:
+    variant: markdown_github
+date: '2022-11-03'
+---
+**Week 8 - Final Prediction**
+```{r ,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE}
+library(tidyverse)
+library(janitor)
+library(ggplot2)
+library(readxl)
+library(ggplot2)
+library(blogdown)
+library(readr)
+library(usmap)
+library(rmapshaper)
+library(sf)
+library(knitr)
+```
+**Introduction**	
+The outcome of the 2022 Midterm Elections will have profound consequences on the future of the country. Losing the House and Senate will most likely derail President Biden’s legislative agenda, leaving him in a similar spot as President Obama in 2010. There are also many high-profile races for Governor and Secretary of State, whose role in certifying elections may have an impact on the 2024 Presidential race. Throughout the last fall semester, I have made several different models to predict the outcome of each individual congressional district. I tried using economic, polling, and advertising data while also factoring in incumbency, get-out-the-vote campaigns, and shocks. Long-story-short, very little has worked effectively. As a result, my main independent variable is expert predictions which has several key advantages I will dive into shortly. Regardless, while the general understanding seems to be that the Democrats will struggle due to economic factors and President Biden’s high disapproval, we cannot know for sure.  
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE}
+cook_historical = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/cook.csv") %>% filter(year == 2010 | year ==2014) %>%
+  mutate(district = as.character(as.numeric(district)),
+         cook_rating = case_when(description == "Solid R" ~ 7, 
+                          description == "Likely R" ~ 6,
+                          description == "Lean R" ~ 5,
+                          description == "Tossup D" ~ 4, 
+                          description == "Tossup R" ~ 4,
+                          description == "Lean D" ~ 3,
+                          description == "Likely D" ~ 2,
+                          description == "Solid D" ~ 1)) %>% 
+  select(year, state, district, cook_rating)
+
+insider_historical = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/inside_elections.csv") %>% filter(year == 2010 | year ==2014) %>%
+  mutate(district = as.character(as.numeric(district)),
+         insider_rating = case_when(description == "Currently Safe Republican" ~ 7, 
+                          description == "Republican Favored" ~ 6,
+                          description == "Lean Republican"  ~ 5,
+                          description == "Toss-up/Tilt Republican" ~ 4, 
+                          description == "Toss-up/Tilt Democrat" ~ 4,
+                          description == "Pure Toss-up" ~ 4,
+                          description == "Lean Democrat" ~ 3,
+                          description == "Democrat Favored" ~ 2,
+                          description == "Currently Safe Democrat" ~ 1)) %>% 
+  select(year, state, district, insider_rating)
+
+
+cook_insider_combined = left_join(insider_historical, cook_historical, by = c("year","state","district")) %>%
+  mutate(avg_rating = case_when(is.na(cook_rating) ~ insider_rating,
+                                !is.na(cook_rating) ~ (insider_rating + cook_rating)/2)) %>% 
+  rename(abbr = state) %>%
+  select(year, abbr, district, avg_rating)
+
+
+demographic_df = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week7/demographic_2009_2020.csv") %>%
+  mutate(district = as.character(as.integer(district)),
+         district = ifelse(is.na(district), 0, district)) %>%
+  rename(plus_65 = "65+",
+         hispanic = "hispanic or latino",
+         twenty_29 = "20_29",
+         thirty_44 = "30_44",
+         fourty5_64 = "45_64",
+         native_american = "native american",
+         pacific_island = "pacific islander")
+
+states = read_excel("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/expert_ratings_2022.xlsx", sheet = "Sheet1")
+
+
+expert_rating2018_full = read_excel("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/expert_ratings_2022.xlsx", sheet = "ratings2018")
+
+expert_rating2018_full = left_join(expert_rating2018_full, states, by="abbr")
+
+
+expert_rating2018_full = expert_rating2018_full %>%
+  mutate(Cook_num = case_when(Cook == "Solid Republican" ~ 7, 
+                          Cook == "Likely Republican" ~ 6,
+                          Cook == "Lean Republican" ~ 5,
+                          Cook == "Toss-up" ~ 4, 
+                          Cook == "Lean Democratic" ~ 3,
+                          Cook == "Likely Democratic" ~ 2,
+                          Cook == "Solid Democratic" ~ 1),
+         Insider_num = case_when(Insider == "Solid Republican" ~ 7, 
+                          Insider == "Likely Republican" ~ 6,
+                          Insider == "Tilt Republican" ~ 5,
+                          Insider == "Lean Republican" ~ 4.5,
+                          Insider == "Toss-up" ~ 4, 
+                          Insider == "Lean Democratic" ~ 3.5,
+                          Insider == "Tilt Democratic" ~ 3,
+                          Insider == "Likely Democratic" ~ 2,
+                          Insider == "Solid Democratic" ~ 1),
+         Sabato_num = case_when(Sabato == "Safe Republican" ~ 7, 
+                          Sabato == "Likely Republican" ~ 6,
+                          Sabato == "Lean Republican" ~ 5,
+                          Sabato == "Toss-up" ~ 4, 
+                          Sabato == "Lean Democratic" ~ 3,
+                          Sabato == "Likely Democratic" ~ 2,
+                          Sabato == "Safe Democratic" ~ 1),
+         avg_rating = (Cook_num + Insider_num+Sabato_num)/3,
+         district = as.character(district)) %>% 
+  mutate(year = 2018) %>% 
+  select(year, state, district, avg_rating)
+
+expert_rating2018_full = left_join(expert_rating2018_full, states, by = "state") %>%
+  select(year, state, abbr, district, avg_rating)
+
+cook_insider_combined = left_join(cook_insider_combined, states, by = "abbr") %>%
+  select(year, state, abbr, district, avg_rating)
+
+
+train_df = rbind(cook_insider_combined, expert_rating2018_full)
+
+
+popvote = read_csv("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week7/house party vote share by district 1948-2020.csv") %>%
+  rename(district = "district_num",
+         year = "raceYear",
+         state = "State") %>% 
+  mutate(district = as.character(district)) %>%
+  select(year,state,district, DemVotesMajorPercent, RepVotesMajorPercent) %>%
+  filter(year != 2020 & DemVotesMajorPercent < 100 & DemVotesMajorPercent > 0) %>%
+  filter(year == 2010 | year == 2014 | year == 2018)
+```
+
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE}
+#set up training set
+train_df = left_join(train_df, popvote, by=c("year","state","district"))
+demographic_train = demographic_df %>% filter(year == 2010 | year == 2014 | year == 2018)
+train_df = left_join(train_df,demographic_train, by=c("year","state","district")) %>% na.omit()
+```
+
+
+
+**Model Overview**
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE, fig.align='center'}
+#set up test data set
+expert_rating2022_full = read_excel("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/expert_ratings_2022.xlsx", sheet = "ratings2022")
+
+expert_rating2022_full = left_join(expert_rating2022_full, states, by="abbr")
+
+expert_rating2022_full = expert_rating2022_full %>%
+  mutate(Cook_num = case_when(Cook == "Solid Republican" ~ 7, 
+                          Cook == "Likely Republican" ~ 6,
+                          Cook == "Lean Republican" ~ 5,
+                          Cook == "Toss-up" ~ 4, 
+                          Cook == "Lean Democratic" ~ 3,
+                          Cook == "Likely Democratic" ~ 2,
+                          Cook == "Solid Democratic" ~ 1),
+         Insider_num = case_when(Insider == "Solid Republican" ~ 7, 
+                          Insider == "Likely Republican" ~ 6,
+                          Insider == "Tilt Republican" ~ 5,
+                          Insider == "Lean Republican" ~ 4.5,
+                          Insider == "Toss-up" ~ 4, 
+                          Insider == "Lean Democratic" ~ 3.5,
+                          Insider == "Tilt Democratic" ~ 3,
+                          Insider == "Likely Democratic" ~ 2,
+                          Insider == "Solid Democratic" ~ 1),
+         Sabato_num = case_when(Sabato == "Safe Republican" ~ 7, 
+                          Sabato == "Likely Republican" ~ 6,
+                          Sabato == "Lean Republican" ~ 5,
+                          Sabato == "Toss-up" ~ 4, 
+                          Sabato == "Lean Democratic" ~ 3,
+                          Sabato == "Likely Democratic" ~ 2,
+                          Sabato == "Safe Democratic" ~ 1),
+         avg_rating = (Cook_num + Insider_num+Sabato_num)/3,
+         district = as.character(district)) %>%
+  mutate(year = 2022) %>%
+  select(year, state, abbr, district, avg_rating)
+
+
+demographics_2022 = read_excel("/Users/hwalker/Desktop/Senior Fall/Election Analytics/electionanalytics/data/week8/demographics_by_2022_cd.xlsx") %>%
+  mutate(district = as.character(district)) %>% 
+  rename(abbr = state) %>%
+  select(abbr, district, white, black, hispanic, asian)
+
+demographics_2022 = left_join(demographics_2022, states, by="abbr")
+
+
+test_df = left_join(expert_rating2022_full, demographics_2022, by=c("state","district")) %>%
+  select(year, state, district, avg_rating, white, black, hispanic, asian)
+```
+
+
+My final model predicts Democratic Vote Share and uses the average expert rating (Cook Political Report, Sabato’s Crystal Ball, and RealClear Politics) and then the percentages of African Americans, Hispanics, and Asians in each district. I view the expert ratings as the main “driver” of this model because they consider fundamentals, incumbency, and polling on a far more sophisticated scale than I would have been able to this semester. Expert ratings are a strong “catch-all” variable because my own attempts at using economic data and polling were largely in vain. In addition, I also wanted to add demographic data because certain groups of people have historically voted in blocks.
+
+\tiny
+
+One limitation of predicting elections in general is lack of information, but unfortunately this issue is exacerbated using expert ratings. “Moneyball” for politics is a relatively new phenomenon, and expert ratings only became widely available starting in 2010. Another choice I had to make was whether to include Presidential Race years. I decided against this because I view midterms as an assessment of the current President’s approval (which differs considerably from when two Presidential candidates are on the ballot). Along with significantly different turnouts, I decided to only use 2010, 2014, and 2018 data to predict the 2022 midterms.
+
+\tiny
+
+Because there were, at most, three observations per district, it was unfeasible to create a linear regression for each congressional seat. Instead, I pooled all the observations together, ignoring the year. This way, I had over 1000 observations. As we can see, every predictor is significant (p-value is below 0.05), a sign that each independent variable is providing us with additional information. Interpreting the coefficients, the presence of every minority group in the model has a positive relationship with the democratic vote share in a district. However, the numbers themselves may be misleading. As we can see, the coefficient for Asians is larger than the other minority groups. However, because the data for each group is a percentage, Asians may be moving the prediction less than African Americans or Hispanics (because there are many more African Americans and Hispanics than Asians in the United States). 
+
+\tiny
+
+Moreover, the average rating predictor has a negative relationship with Democratic vote share, but this was how it was coded. A value of 7 corresponded to the “Solid Republican,” meaning there is no question the district will elect a Republican. It makes sense that the avg_rating coefficient is negative. Higher values of the rating will correspond with a smaller democratic vote share.  
+
+
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE, fig.align='center'}
+full_model_dem = lm(DemVotesMajorPercent~ avg_rating +black +hispanic+asian, data = train_df)
+formula(full_model_dem)
+summary(full_model_dem)
+```
+**Model Validation**
+
+As we can see, the Adjusted R-Squared of the model is 0.8443, a huge improvement over ones from prior weeks. As we can see from the predictions versus the residuals from the training set, the model is better at predicting close races. While there is certainly error in the less competitive districts, I am not worried. Ultimately, we are focused on who wins control of the house. I care much more about  predicting the seat accurately than I am predicting the win margin correctly. Fortunately for us, races where a candidate wins by 10 or more percentage points is probably easy to predict anyway. One issue that we can see is that there are very large ranges for the predictions. For example, Alabama's 1st District has an average rating of 7, corresponding to "Solid Republican." However, its upper bound actually has the Democrats winning. I think this is caused from pooling all the observations together which dilutes the district specific information that may be important. 
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.align='center'}
+plot(full_model_dem, which=c(1))
+
+# sum(predict(object = full_model_dem, test_df) > 50)
+
+temp = data.frame(cbind(test_df %>% select(state, district, avg_rating),data.frame(predict(object = full_model_dem, test_df, interval = "predict"))) %>%
+  rename(lower_bound = lwr,
+         upper_bound = upr,
+         prediction = fit))
+kable(temp)
+```
+
+**Conclusion**
+
+While building these models, one theme keeps returning: forecasting elections is extremely difficult. The most important reason is because elections do not happen very often (once every two years is not a lot of data for a statistician), and we have to ignore most of them because they are irrelevant (Democrats controlled the house for most of the 20th century regardless of which party controlled the White House). Also, as we have seen many times, polls can be deceiving, people may have different priorities than what was expected, or certain events can galvanize turnout in one direction. Ultimately, I predict that it will be this last point, turnout, that decides who wins in key races across the country. Unfortunately, politics has become more about getting your team to vote than it is to appeal to the other side. Regardless, my model predicts that Democrats will win 207 congressional seats, giving the Republicans a large majority in the house. Below shows the final results (note: the map in R is using the 2018 districts because this was the only one available. Because of this, the grey indicates where there may have been redistricting. For example, Montana is now divided into two districts instead of one, so the plot is grey because of the discrepancy). 
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center', include=FALSE}
+final_preds = cbind(test_df %>% select(state, district, avg_rating),data.frame(predict(object = full_model_dem, test_df, interval = "predict"))) %>%
+  mutate(pred = case_when(fit > 50.0 ~ 1,
+                          fit < 50.0 ~ 0)) %>%
+  rename(DISTRICT = district,
+         STATENAME = state) 
+
+final_preds$DISTRICT[final_preds$STATENAME == "North Dakota"] = "0"
+final_preds$DISTRICT[final_preds$STATENAME == "South Dakota"] = "0"
+final_preds$DISTRICT[final_preds$STATENAME == "Delaware"] = "0"
+final_preds$DISTRICT[final_preds$STATENAME == "Wyoming"] = "0"
+final_preds$DISTRICT[final_preds$STATENAME == "Vermont"] = "0"
+
+get_congress_map = function() {
+  tmp_file = tempfile()
+  tmp_dir = tempdir()
+  download.file("https://cdmaps.polisci.ucla.edu/shp/districts114.zip", tmp_file)
+  unzip(zipfile=tmp_file, exdir=tmp_dir)
+  fpath = paste(tmp_dir, "districtShapes/districts114.shp", sep="/")
+  st_read(fpath)
+}
+districts = get_congress_map()
+
+districts_new = left_join(districts, final_preds, by=c("STATENAME","DISTRICT"))
+districts_new <- rmapshaper::ms_simplify(districts_new, keep = 0.01)
+```
+
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.width=12, fig.height=6, fig.align='center'}
+ggplot() + 
+  geom_sf(data=districts_new,aes(fill=pred),
+          inherit.aes=FALSE,alpha=1) + 
+  scale_fill_gradient(low = "red", high = "blue", limits=c(0,1)) +
+  coord_sf(xlim=c(-130, -60), ylim=c(25, 50), expand = FALSE) +  
+  labs(title = "Prediction for the House, 2022")+
+  theme_void() +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+```
+
+
+
+
+
