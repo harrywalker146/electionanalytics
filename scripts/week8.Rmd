@@ -200,9 +200,9 @@ Moreover, the average rating predictor has a negative relationship with Democrat
 
 
 
-```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE,include=FALSE, fig.align='center'}
+```{r,echo=FALSE,warning=FALSE,echo=FALSE, message=FALSE, fig.align='center'}
 full_model_dem = lm(DemVotesMajorPercent~ avg_rating +black +hispanic+asian, data = train_df)
-formula(full_model_dem)
+print(formula(full_model_dem))
 summary(full_model_dem)
 ```
 **Model Validation**

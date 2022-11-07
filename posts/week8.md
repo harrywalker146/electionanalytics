@@ -63,6 +63,31 @@ district will elect a Republican. It makes sense that the avg_rating
 coefficient is negative. Higher values of the rating will correspond
 with a smaller democratic vote share.
 
+    ## DemVotesMajorPercent ~ avg_rating + black + hispanic + asian
+
+    ## 
+    ## Call:
+    ## lm(formula = DemVotesMajorPercent ~ avg_rating + black + hispanic + 
+    ##     asian, data = train_df)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -23.3290  -4.2016  -0.3511   4.2969  24.3431 
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) 64.14248    0.64659  99.201  < 2e-16 ***
+    ## avg_rating  -4.85213    0.08572 -56.603  < 2e-16 ***
+    ## black       26.00595    1.59987  16.255  < 2e-16 ***
+    ## hispanic     6.76445    1.24853   5.418 7.36e-08 ***
+    ## asian       33.98194    3.44098   9.876  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.624 on 1135 degrees of freedom
+    ## Multiple R-squared:  0.8449, Adjusted R-squared:  0.8443 
+    ## F-statistic:  1545 on 4 and 1135 DF,  p-value: < 2.2e-16
+
 **Model Validation**
 
 As we can see, the Adjusted R-Squared of the model is 0.8443, a huge
