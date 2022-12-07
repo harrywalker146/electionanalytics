@@ -1,6 +1,8 @@
 ---
 title: "Campaign Reflection"
-output: html_document
+output:
+  md_document:
+    variant: markdown_github
 date: '2022-12-07'
 ---
 **Campaign Narrative**
